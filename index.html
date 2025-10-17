@@ -1,1902 +1,1969 @@
 <!DOCTYPE html>
-<html lang="vi">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Interactive Relative Clauses Quiz</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- React Libraries -->
-    <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
-    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
-    <!-- Babel Compiler -->
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <style>
-      @keyframes fadeIn {
-        from {
-          opacity: 0;
-          transform: translateY(10px);
-        }
-        to {
-          opacity: 1;
-          transform: translateY(0);
-        }
-      }
-      .animate-fade-in {
-        animation: fadeIn 0.5s ease-out forwards;
-      }
-    </style>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Interactive Quiz - Relative Clauses</title>
+  <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @keyframes fade-in {
+      from { opacity: 0; transform: translateY(-10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-fade-in {
+      animation: fade-in 0.3s ease-out forwards;
+    }
+    body {
+      background-color: #f0f4f8;
+    }
+  </style>
 </head>
-  <body class="bg-slate-100">
-    <div id="root"></div>
+<body>
+  <div id="root"></div>
 
-    <script type="text/babel">
-      const { useState, useCallback, useMemo, useEffect, FC, FormEvent } = React;
+  <script type="text/babel">
+    //============= Data ==============
+    const quizData = [
+        {
+            id: 1,
+            question: "Sunday is the day .......... I go to Water park with my kids.",
+            translation: "Chủ nhật là ngày .......... tôi đi công viên nước với các con.",
+            options: [
+                { id: "A", text: "when" },
+                { id: "B", text: "where" },
+                { id: "C", text: "why" },
+                { id: "D", text: "which" },
+            ],
+            correctAnswer: "A",
+            hint: "Trạng từ quan hệ chỉ thời gian.",
+            explanation: "Dùng 'when' để thay thế cho danh từ chỉ thời gian 'the day'.",
+            type: "single-choice",
+        },
+        {
+            id: 2,
+            question: "That was the reason .......... he didn't marry her.",
+            translation: "Đó là lý do .......... anh ấy không cưới cô ta.",
+            options: [
+                { id: "A", text: "when" },
+                { id: "B", text: "where" },
+                { id: "C", text: "why" },
+                { id: "D", text: "which" },
+            ],
+            correctAnswer: "C",
+            hint: "Trạng từ quan hệ chỉ lý do.",
+            explanation: "Dùng 'why' để thay thế cho danh từ chỉ lý do 'the reason'.",
+            type: "single-choice",
+        },
+        {
+            id: 3,
+            question: "An architect is someone .......... designs buildings.",
+            translation: "Kiến trúc sư là người .......... thiết kế các tòa nhà.",
+            options: [
+                { id: "A", text: "who" },
+                { id: "B", text: "whom" },
+                { id: "C", text: "which" },
+                { id: "D", text: "whose" },
+            ],
+            correctAnswer: "A",
+            hint: "Đại từ quan hệ chỉ người, làm chủ ngữ.",
+            explanation: "Dùng 'who' để thay thế cho danh từ chỉ người 'someone' và làm chủ ngữ cho động từ 'designs'.",
+            type: "single-choice",
+        },
+        {
+            id: 4,
+            question: "The boy to .......... I lent my money is poor.",
+            translation: "Cậu bé .......... tôi cho mượn tiền thì nghèo.",
+            options: [
+                { id: "A", text: "who" },
+                { id: "B", text: "whom" },
+                { id: "C", text: "which" },
+                { id: "D", text: "that" },
+            ],
+            correctAnswer: "B",
+            hint: "Đại từ quan hệ chỉ người, làm tân ngữ sau giới từ.",
+            explanation: "Dùng 'whom' để thay thế cho danh từ chỉ người 'The boy' và làm tân ngữ cho giới từ 'to'.",
+            type: "single-choice",
+        },
+        {
+            id: 5,
+            question: "The land and the people .......... I have met are nice.",
+            translation: "Vùng đất và những con người .......... tôi đã gặp đều dễ mến.",
+            options: [
+                { id: "A", text: "who" },
+                { id: "B", text: "whom" },
+                { id: "C", text: "which" },
+                { id: "D", text: "that" },
+            ],
+            correctAnswer: "D",
+            hint: "Đại từ quan hệ chỉ cả người và vật.",
+            explanation: "Khi danh từ phía trước bao gồm cả người ('the people') và vật ('The land'), ta dùng 'that'.",
+            type: "single-choice",
+        },
+        {
+            id: 6,
+            question: "I can answer the question .......... you say is very difficult.",
+            translation: "Tôi có thể trả lời câu hỏi .......... bạn nói là rất khó.",
+            options: [
+                { id: "A", text: "which" },
+                { id: "B", text: "who" },
+                { id: "C", text: "whom" },
+                { id: "D", text: "whose" },
+            ],
+            correctAnswer: "A",
+            hint: "Đại từ quan hệ chỉ vật, làm tân ngữ.",
+            explanation: "Dùng 'which' để thay thế cho danh từ chỉ vật 'the question'.",
+            type: "single-choice",
+        },
+        {
+            id: 7,
+            question: "This is the place .......... the battle took place ten years ago.",
+            translation: "Đây là nơi .......... trận chiến đã diễn ra mười năm trước.",
+            options: [
+                { id: "A", text: "which" },
+                { id: "B", text: "in where" },
+                { id: "C", text: "where" },
+                { id: "D", text: "from where" },
+            ],
+            correctAnswer: "C",
+            hint: "Trạng từ quan hệ chỉ nơi chốn.",
+            explanation: "Dùng 'where' để thay thế cho danh từ chỉ nơi chốn 'the place'. 'Where' tương đương với 'in/at which'.",
+            type: "single-choice",
+        },
+        {
+            id: 8,
+            question: "Sunday is the day .......... which we usually go fishing.",
+            translation: "Chủ nhật là ngày .......... chúng tôi thường đi câu cá.",
+            options: [
+                { id: "A", text: "during" },
+                { id: "B", text: "at" },
+                { id: "C", text: "in" },
+                { id: "D", text: "on" },
+            ],
+            correctAnswer: "D",
+            hint: "Giới từ đi với ngày trong tuần.",
+            explanation: "Cụm từ 'go fishing on Sunday' (đi câu cá vào Chủ nhật) yêu cầu giới từ 'on'. Mệnh đề quan hệ đầy đủ là 'on which'.",
+            type: "single-choice",
+        },
+        {
+            id: 9,
+            question: "This is the last time .......... I speak to you.",
+            translation: "Đây là lần cuối cùng .......... tôi nói chuyện với bạn.",
+            options: [
+                { id: "A", text: "of which" },
+                { id: "B", text: "whose" },
+                { id: "C", text: "that" },
+                { id: "D", text: "which" },
+            ],
+            correctAnswer: "C",
+            hint: "Đại từ quan hệ 'that' thường được dùng sau các cụm từ so sánh nhất hoặc các từ như 'the last', 'the only'.",
+            explanation: "Sau 'the last time', chúng ta thường dùng 'that' trong mệnh đề quan hệ.",
+            type: "single-choice",
+        },
+        {
+            id: 10,
+            question: "He talked about the books and the authors .......... interested him.",
+            translation: "Anh ấy đã nói về những cuốn sách và tác giả .......... đã làm anh ấy hứng thú.",
+            options: [
+                { id: "A", text: "who" },
+                { id: "B", text: "that" },
+                { id: "C", text: "which" },
+                { id: "D", text: "whom" },
+            ],
+            correctAnswer: "B",
+            hint: "Đại từ quan hệ chỉ cả người và vật.",
+            explanation: "Khi danh từ phía trước bao gồm cả người ('the authors') và vật ('the books'), ta dùng 'that'.",
+            type: "single-choice",
+        },
+        {
+            id: 11,
+            question: "Bondi is the beautiful beach .......... I used to sunbathe.",
+            translation: "Bondi là bãi biển xinh đẹp .......... tôi từng tắm nắng.",
+            options: [
+                { id: "A", text: "when" },
+                { id: "B", text: "where" },
+                { id: "C", text: "which" },
+                { id: "D", text: "why" },
+            ],
+            correctAnswer: "B",
+            hint: "Trạng từ quan hệ chỉ nơi chốn.",
+            explanation: "Dùng 'where' để chỉ nơi chốn 'the beautiful beach'. Câu đầy đủ có thể là 'I used to sunbathe at the beach'.",
+            type: "single-choice",
+        },
+        {
+            id: 12,
+            question: "Dec 26th, 05 was the day .......... the terrible tsunami happened.",
+            translation: "Ngày 26 tháng 12 năm 05 là ngày .......... thảm họa sóng thần kinh hoàng đã xảy ra.",
+            options: [
+                { id: "A", text: "when" },
+                { id: "B", text: "where" },
+                { id: "C", text: "which" },
+                { id: "D", text: "why" },
+            ],
+            correctAnswer: "A",
+            hint: "Trạng từ quan hệ chỉ thời gian.",
+            explanation: "Dùng 'when' để chỉ thời gian 'the day'.",
+            type: "single-choice",
+        },
+        {
+            id: 13,
+            question: "The woman .......... lives next my door is a doctor.",
+            translation: "Người phụ nữ .......... sống cạnh nhà tôi là một bác sĩ.",
+            options: [
+                { id: "A", text: "who" },
+                { id: "B", text: "whom" },
+                { id: "C", text: "which" },
+                { id: "D", text: "whose" },
+            ],
+            correctAnswer: "A",
+            hint: "Đại từ quan hệ chỉ người, làm chủ ngữ.",
+            explanation: "Dùng 'who' để thay thế cho 'The woman' và làm chủ ngữ cho động từ 'lives'.",
+            type: "single-choice",
+        },
+        {
+            id: 14,
+            question: "The boy .......... Mary likes is my son.",
+            translation: "Cậu bé .......... Mary thích là con trai tôi.",
+            options: [
+                { id: "A", text: "who" },
+                { id: "B", text: "whom" },
+                { id: "C", text: "which" },
+                { id: "D", text: "whose" },
+            ],
+            correctAnswer: "B",
+            hint: "Đại từ quan hệ chỉ người, làm tân ngữ.",
+            explanation: "Dùng 'whom' để thay thế cho 'The boy' và làm tân ngữ cho động từ 'likes' (Mary likes the boy). Có thể dùng 'that' hoặc bỏ đi trong văn nói.",
+            type: "single-choice",
+        },
+        {
+            id: 15,
+            question: "The boy .......... eyes are brown is my son.",
+            translation: "Cậu bé .......... có đôi mắt màu nâu là con trai tôi.",
+            options: [
+                { id: "A", text: "who" },
+                { id: "B", text: "whom" },
+                { id: "C", text: "which" },
+                { id: "D", text: "whose" },
+            ],
+            correctAnswer: "D",
+            hint: "Đại từ quan hệ chỉ sự sở hữu.",
+            explanation: "Dùng 'whose' để chỉ sự sở hữu (đôi mắt của cậu bé - his eyes).",
+            type: "single-choice",
+        },
+        {
+            id: 16,
+            question: "The table .......... legs are broken should be repaired.",
+            translation: "Cái bàn .......... có những cái chân bị gãy cần được sửa chữa.",
+            options: [
+                { id: "A", text: "who" },
+                { id: "B", text: "whom" },
+                { id: "C", text: "which" },
+                { id: "D", text: "whose" },
+            ],
+            correctAnswer: "D",
+            hint: "Đại từ quan hệ chỉ sự sở hữu cho cả người và vật.",
+            explanation: "Dùng 'whose' để chỉ sự sở hữu cho vật (những cái chân của cái bàn - its legs).",
+            type: "single-choice",
+        },
+        {
+            id: 17,
+            question: "The town .......... we are living is noisy and crowded.",
+            translation: "Thị trấn .......... chúng tôi đang sống thì ồn ào và đông đúc.",
+            options: [
+                { id: "A", text: "where" },
+                { id: "B", text: "in where" },
+                { id: "C", text: "which" },
+                { id: "D", text: "at which" },
+            ],
+            correctAnswer: "A",
+            hint: "Trạng từ quan hệ chỉ nơi chốn. 'where' = 'in/at which'.",
+            explanation: "Dùng 'where' để thay thế cho nơi chốn 'The town' (we are living in the town). 'in where' là sai ngữ pháp.",
+            type: "single-choice",
+        },
+        {
+            id: 18,
+            question: "The year .......... we came to live here was 1997.",
+            translation: "Năm .......... chúng tôi đến sống ở đây là năm 1997.",
+            options: [
+                { id: "A", text: "when" },
+                { id: "B", text: "which" },
+                { id: "C", text: "that" },
+                { id: "D", text: "in the time" },
+            ],
+            correctAnswer: "A",
+            hint: "Trạng từ quan hệ chỉ thời gian.",
+            explanation: "Dùng 'when' để chỉ thời gian 'The year' (we came to live here in that year).",
+            type: "single-choice",
+        },
+        {
+            id: 19,
+            question: "The worker .......... house is next to mine died this morning.",
+            translation: "Người công nhân .......... có nhà ở cạnh nhà tôi đã mất sáng nay.",
+            options: [
+                { id: "A", text: "whose" },
+                { id: "B", text: "whom" },
+                { id: "C", text: "which" },
+                { id: "D", text: "whose" },
+            ],
+            correctAnswer: "A",
+            hint: "Đại từ quan hệ chỉ sự sở hữu.",
+            explanation: "Dùng 'whose' để chỉ sự sở hữu (nhà của người công nhân - his house).",
+            type: "single-choice",
+        },
+        {
+            id: 20,
+            question: "The lady .......... son went on a picnic with us last weekend is a teacher at our school.",
+            translation: "Người phụ nữ .......... có con trai đi dã ngoại với chúng tôi cuối tuần trước là một giáo viên ở trường chúng tôi.",
+            options: [
+                { id: "A", text: "who" },
+                { id: "B", text: "whom" },
+                { id: "C", text: "whose" },
+                { id: "D", text: "that" },
+            ],
+            correctAnswer: "C",
+            hint: "Đại từ quan hệ chỉ sự sở hữu.",
+            explanation: "Dùng 'whose' để chỉ sự sở hữu (con trai của người phụ nữ - her son).",
+            type: "single-choice",
+        },
+        {
+            id: 21,
+            question: "Take .......... measures you consider best.",
+            translation: "Hãy thực hiện .......... biện pháp mà bạn cho là tốt nhất.",
+            options: [
+                { id: "A", text: "whatever" },
+                { id: "B", text: "however" },
+                { id: "C", text: "whenever" },
+                { id: "D", text: "which" },
+            ],
+            correctAnswer: "A",
+            hint: "Bất cứ biện pháp nào.",
+            explanation: "'Whatever' có nghĩa là 'bất cứ thứ gì', trong trường hợp này là 'bất cứ biện pháp nào'.",
+            type: "single-choice",
+        },
+        {
+            id: 22,
+            question: ".......... difficulties you may encounter, I'm sure you'll succeed.",
+            translation: ".......... khó khăn bạn có thể gặp phải, tôi chắc chắn bạn sẽ thành công.",
+            options: [
+                { id: "A", text: "how" },
+                { id: "B", text: "whatever" },
+                { id: "C", text: "however" },
+                { id: "D", text: "how great" },
+            ],
+            correctAnswer: "B",
+            hint: "Bất kể khó khăn gì.",
+            explanation: "'Whatever difficulties' có nghĩa là 'bất kể khó khăn nào'. 'However' thường đi với tính từ hoặc trạng từ (ví dụ: however difficult).",
+            type: "single-choice",
+        },
+        {
+            id: 23,
+            question: "He is the only friend .......... I like.",
+            translation: "Anh ấy là người bạn duy nhất .......... tôi thích.",
+            options: [
+                { id: "A", text: "who" },
+                { id: "B", text: "whom" },
+                { id: "C", text: "that" },
+                { id: "D", text: "all" },
+            ],
+            correctAnswer: "C",
+            hint: "Đại từ quan hệ 'that' thường được dùng sau 'the only'.",
+            explanation: "Sau 'the only', chúng ta thường dùng 'that' trong mệnh đề quan hệ.",
+            type: "single-choice",
+        },
+        {
+            id: 24,
+            question: "I didn't get the job .......... which I applied.",
+            translation: "Tôi đã không nhận được công việc .......... mà tôi đã ứng tuyển.",
+            options: [
+                { id: "A", text: "in" },
+                { id: "B", text: "on" },
+                { id: "C", text: "at" },
+                { id: "D", text: "for" },
+            ],
+            correctAnswer: "D",
+            hint: "Giới từ đi với 'apply'.",
+            explanation: "Động từ 'apply' đi với giới từ 'for' (apply for a job). Do đó, mệnh đề quan hệ đầy đủ là 'for which'.",
+            type: "single-choice",
+        },
+        {
+            id: 25,
+            question: "The man .......... whom she is married has been married twice before.",
+            translation: "Người đàn ông .......... cô ấy kết hôn đã từng kết hôn hai lần trước đó.",
+            options: [
+                { id: "A", text: "in" },
+                { id: "B", text: "on" },
+                { id: "C", text: "at" },
+                { id: "D", text: "to" },
+            ],
+            correctAnswer: "D",
+            hint: "Giới từ đi với 'married'.",
+            explanation: "Cụm từ 'be married to someone'. Do đó, mệnh đề quan hệ đầy đủ là 'to whom'.",
+            type: "single-choice",
+        },
+        {
+            id: 26,
+            question: "I wasn't interested in the things .......... which they were talking.",
+            translation: "Tôi không hứng thú với những điều .......... họ đang nói.",
+            options: [
+                { id: "A", text: "in" },
+                { id: "B", text: "on" },
+                { id: "C", text: "at" },
+                { id: "D", text: "about" },
+            ],
+            correctAnswer: "D",
+            hint: "Giới từ đi với 'talk'.",
+            explanation: "Cụm từ 'talk about something'. Do đó, mệnh đề quan hệ đầy đủ là 'about which'.",
+            type: "single-choice",
+        },
+        {
+            id: 27,
+            question: "The bed .......... which I slept was too soft.",
+            translation: "Cái giường .......... tôi đã ngủ thì quá mềm.",
+            options: [
+                { id: "A", text: "in" },
+                { id: "B", text: "on" },
+                { id: "C", text: "at" },
+                { id: "D", text: "for" },
+            ],
+            correctAnswer: "A",
+            hint: "Giới từ chỉ vị trí ngủ.",
+            explanation: "Chúng ta 'sleep in a bed'. Do đó, mệnh đề quan hệ đầy đủ là 'in which'.",
+            type: "single-choice",
+        },
+        {
+            id: 28,
+            question: "The party .......... which we went wasn't very enjoyable.",
+            translation: "Bữa tiệc .......... chúng tôi đã đến không vui lắm.",
+            options: [
+                { id: "A", text: "in" },
+                { id: "B", text: "on" },
+                { id: "C", text: "at" },
+                { id: "D", text: "to" },
+            ],
+            correctAnswer: "D",
+            hint: "Giới từ đi với 'go'.",
+            explanation: "Chúng ta 'go to a party'. Do đó, mệnh đề quan hệ đầy đủ là 'to which'.",
+            type: "single-choice",
+        },
+        {
+            id: 29,
+            question: "The flight .......... which we wanted to travel was fully booked.",
+            translation: "Chuyến bay .......... chúng tôi muốn đi đã được đặt hết chỗ.",
+            options: [
+                { id: "A", text: "in" },
+                { id: "B", text: "on" },
+                { id: "C", text: "at" },
+                { id: "D", text: "for" },
+            ],
+            correctAnswer: "B",
+            hint: "Giới từ đi với 'travel on a flight'.",
+            explanation: "Chúng ta 'travel on a flight'. Do đó, mệnh đề quan hệ đầy đủ là 'on which'.",
+            type: "single-choice",
+        },
+        {
+            id: 30,
+            question: "She is the most beautiful girl .......... ever lived.",
+            translation: "Cô ấy là cô gái xinh đẹp nhất .......... từng sống.",
+            options: [
+                { id: "A", text: "which" },
+                { id: "B", text: "whom" },
+                { id: "C", text: "whose" },
+                { id: "D", text: "that" },
+            ],
+            correctAnswer: "D",
+            hint: "Đại từ quan hệ 'that' thường được dùng sau so sánh nhất.",
+            explanation: "Sau so sánh nhất 'the most beautiful girl', chúng ta thường dùng 'that'.",
+            type: "single-choice",
+        },
+        {
+            id: 31,
+            question: "The decision was postponed, .......... was exactly what he wanted.",
+            translation: "Quyết định đã bị hoãn lại, .......... đó chính xác là điều anh ấy muốn.",
+            options: [
+                { id: "A", text: "who" },
+                { id: "B", text: "whom" },
+                { id: "C", text: "which" },
+                { id: "D", text: "that" },
+            ],
+            correctAnswer: "C",
+            hint: "Đại từ quan hệ thay thế cho cả một mệnh đề đứng trước.",
+            explanation: "Dùng 'which' để thay thế cho cả mệnh đề 'The decision was postponed'. Lưu ý phải có dấu phẩy trước 'which' trong trường hợp này.",
+            type: "single-choice",
+        },
+        {
+            id: 32,
+            question: "All the people .......... have gone into the room are still young.",
+            translation: "Tất cả những người .......... đã vào phòng vẫn còn trẻ.",
+            options: [
+                { id: "A", text: "which" },
+                { id: "B", text: "whom" },
+                { id: "C", text: "whose" },
+                { id: "D", text: "that" },
+            ],
+            correctAnswer: "D",
+            hint: "Đại từ quan hệ 'that' thường được dùng sau 'all'.",
+            explanation: "Sau các đại từ bất định như 'all', 'some', 'any', 'none', chúng ta thường dùng 'that'.",
+            type: "single-choice",
+        },
+        {
+            id: 33,
+            question: "Jack has three brothers, all of .......... are married.",
+            translation: "Jack có ba người anh em trai, tất cả .......... đều đã kết hôn.",
+            options: [
+                { id: "A", text: "who" },
+                { id: "B", text: "whom" },
+                { id: "C", text: "which" },
+                { id: "D", text: "that" },
+            ],
+            correctAnswer: "B",
+            hint: "Đại từ quan hệ chỉ người, làm tân ngữ sau giới từ 'of'.",
+            explanation: "Trong cấu trúc 'all of ...', ta phải dùng 'whom' cho người hoặc 'which' cho vật. Ở đây là người ('brothers'), nên đáp án là 'whom'.",
+            type: "single-choice",
+        },
+        {
+            id: 34,
+            question: "They gave us a lot of information, most of .......... was useless.",
+            translation: "Họ đã cho chúng tôi rất nhiều thông tin, hầu hết .......... đều vô dụng.",
+            options: [
+                { id: "A", text: "who" },
+                { id: "B", text: "whom" },
+                { id: "C", text: "which" },
+                { id: "D", text: "that" },
+            ],
+            correctAnswer: "C",
+            hint: "Đại từ quan hệ chỉ vật, làm tân ngữ sau giới từ 'of'.",
+            explanation: "Trong cấu trúc 'most of ...', ta phải dùng 'which' cho vật. Ở đây là vật ('information'), nên đáp án là 'which'.",
+            type: "single-choice",
+        },
+        {
+            id: 35,
+            question: "There were a lot of people at the party, only a few of .......... I had met before.",
+            translation: "Có rất nhiều người ở bữa tiệc, chỉ một vài người trong số đó .......... tôi đã gặp trước đây.",
+            options: [
+                { id: "A", text: "who" },
+                { id: "B", text: "whom" },
+                { id: "C", text: "them" },
+                { id: "D", text: "that" },
+            ],
+            correctAnswer: "B",
+            hint: "Đại từ quan hệ chỉ người, làm tân ngữ sau giới từ 'of'.",
+            explanation: "Trong cấu trúc 'a few of ...', ta phải dùng 'whom' cho người. Ở đây là người ('people'), nên đáp án là 'whom'.",
+            type: "single-choice",
+        },
+        {
+            id: 36,
+            question: "I have sent him two letters, neither of .......... has arrived.",
+            translation: "Tôi đã gửi cho anh ấy hai lá thư, không lá nào trong số đó .......... đã đến.",
+            options: [
+                { id: "A", text: "who" },
+                { id: "B", text: "them" },
+                { id: "C", text: "which" },
+                { id: "D", text: "that" },
+            ],
+            correctAnswer: "C",
+            hint: "Đại từ quan hệ chỉ vật, làm tân ngữ sau giới từ 'of'.",
+            explanation: "Trong cấu trúc 'neither of ...', ta phải dùng 'which' cho vật. Ở đây là vật ('letters'), nên đáp án là 'which'.",
+            type: "single-choice",
+        },
+        {
+            id: 37,
+            question: "John won $600, half of .......... he gave to his parents.",
+            translation: "John đã thắng 600 đô la, một nửa trong số đó .......... anh ấy đã đưa cho bố mẹ.",
+            options: [
+                { id: "A", text: "whom" },
+                { id: "B", text: "which" },
+                { id: "C", text: "that" },
+                { id: "D", text: "it" },
+            ],
+            correctAnswer: "B",
+            hint: "Đại từ quan hệ chỉ vật, làm tân ngữ sau giới từ 'of'.",
+            explanation: "Trong cấu trúc 'half of ...', ta phải dùng 'which' cho vật. Ở đây là vật ('$600'), nên đáp án là 'which'.",
+            type: "single-choice",
+        },
+        {
+            id: 38,
+            question: "Ten people applied for the job, none of .......... were suitable.",
+            translation: "Mười người đã ứng tuyển vào công việc, không ai trong số họ .......... phù hợp.",
+            options: [
+                { id: "A", text: "who" },
+                { id: "B", text: "whom" },
+                { id: "C", text: "them" },
+                { id: "D", text: "that" },
+            ],
+            correctAnswer: "B",
+            hint: "Đại từ quan hệ chỉ người, làm tân ngữ sau giới từ 'of'.",
+            explanation: "Trong cấu trúc 'none of ...', ta phải dùng 'whom' cho người. Ở đây là người ('people'), nên đáp án là 'whom'.",
+            type: "single-choice",
+        },
+        {
+            id: 39,
+            question: "Jill isn't on the phone, .......... makes it difficult to contact her.",
+            translation: "Jill không nghe điện thoại, .......... điều đó khiến việc liên lạc với cô ấy trở nên khó khăn.",
+            options: [
+                { id: "A", text: "which" },
+                { id: "B", text: "what" },
+                { id: "C", text: "who" },
+                { id: "D", text: "it" },
+            ],
+            correctAnswer: "A",
+            hint: "Đại từ quan hệ thay thế cho cả một mệnh đề đứng trước.",
+            explanation: "Dùng 'which' để thay thế cho cả mệnh đề 'Jill isn't on the phone'. Lưu ý phải có dấu phẩy trước 'which' trong trường hợp này.",
+            type: "single-choice",
+        },
+        {
+            id: 40,
+            question: "Bob is the kind of person to .......... one can talk about anything.",
+            translation: "Bob là kiểu người mà người ta có thể nói chuyện về bất cứ điều gì ..........",
+            options: [
+                { id: "A", text: "who" },
+                { id: "B", text: "whom" },
+                { id: "C", text: "that" },
+                { id: "D", text: "him" },
+            ],
+            correctAnswer: "B",
+            hint: "Đại từ quan hệ chỉ người, làm tân ngữ sau giới từ.",
+            explanation: "Câu gốc là 'one can talk to him about anything'. Khi chuyển thành mệnh đề quan hệ, 'him' được thay bằng 'whom'. Giới từ 'to' được đặt trước 'whom'.",
+            type: "single-choice",
+        },
+        {
+            id: 41,
+            question: "He is a person .......... friends trust him.",
+            translation: "Anh ấy là một người .......... bạn bè tin tưởng.",
+            options: [
+                { id: "A", text: "who" },
+                { id: "B", text: "whose" },
+                { id: "C", text: "his" },
+                { id: "D", text: "that" },
+            ],
+            correctAnswer: "B",
+            hint: "Đại từ quan hệ chỉ sự sở hữu.",
+            explanation: "Cấu trúc 'whose + danh từ' (whose friends) để chỉ 'bạn bè của anh ấy'.",
+            type: "single-choice",
+        },
+        {
+            id: 42,
+            question: "Your career should focus on a field in .......... you are genuinely interested.",
+            translation: "Sự nghiệp của bạn nên tập trung vào một lĩnh vực mà .......... bạn thực sự quan tâm.",
+            options: [
+                { id: "A", text: "which" },
+                { id: "B", text: "what" },
+                { id: "C", text: "that" },
+                { id: "D", text: "why" },
+            ],
+            correctAnswer: "A",
+            hint: "Đại từ quan hệ chỉ vật, làm tân ngữ sau giới từ.",
+            explanation: "Cụm từ 'be interested in something'. Giới từ 'in' được đặt trước đại từ quan hệ 'which' (in which).",
+            type: "single-choice",
+        },
+        {
+            id: 43,
+            question: "People .......... outlook on life is optimistic are usually happy people.",
+            translation: "Những người .......... có cái nhìn lạc quan về cuộc sống thường là những người hạnh phúc.",
+            options: [
+                { id: "A", text: "whose" },
+                { id: "B", text: "whom" },
+                { id: "C", text: "that" },
+                { id: "D", text: "which" },
+            ],
+            correctAnswer: "A",
+            hint: "Đại từ quan hệ chỉ sự sở hữu.",
+            explanation: "Cấu trúc 'whose + danh từ' (whose outlook) để chỉ 'cái nhìn của họ'.",
+            type: "single-choice",
+        },
+        {
+            id: 44,
+            question: "Anna's marriage has been arranged by her family. She is marrying a man ..........",
+            translation: "Hôn nhân của Anna đã được gia đình sắp đặt. Cô ấy sẽ cưới một người đàn ông ..........",
+            options: [
+                { id: "A", text: "that she hardly knows him" },
+                { id: "B", text: "whom she hardly knows him" },
+                { id: "C", text: "she hardly knows" },
+                { id: "D", text: "which she hardly knows" },
+            ],
+            correctAnswer: "C",
+            hint: "Rút gọn mệnh đề quan hệ khi đại từ quan hệ làm tân ngữ.",
+            explanation: "Mệnh đề đầy đủ là 'whom she hardly knows'. Trong mệnh đề quan hệ xác định, ta có thể lược bỏ đại từ quan hệ khi nó làm tân ngữ. Các đáp án A và B sai vì thừa 'him'.",
+            type: "single-choice",
+        },
+        {
+            id: 45,
+            question: "They said they didn't have any money, ........... was a pity.",
+            translation: "Họ nói rằng họ không có tiền, ........... thật đáng tiếc.",
+            options: [
+                { id: "A", text: "which" },
+                { id: "B", text: "that" },
+                { id: "C", text: "this" },
+                { id: "D", text: "it" },
+            ],
+            correctAnswer: "A",
+            hint: "Đại từ quan hệ thay thế cho cả một mệnh đề đứng trước.",
+            explanation: "Dùng 'which' để thay thế cho cả mệnh đề 'they didn't have any money'. Lưu ý phải có dấu phẩy trước 'which' trong trường hợp này.",
+            type: "single-choice",
+        },
+        {
+            id: 46,
+            question: "I haven't got a passport, ........... means I can't leave my country.",
+            translation: "Tôi không có hộ chiếu, ........... điều đó có nghĩa là tôi không thể rời khỏi đất nước của mình.",
+            options: [
+                { id: "A", text: "it" },
+                { id: "B", text: "that" },
+                { id: "C", text: "this" },
+                { id: "D", text: "which" },
+            ],
+            correctAnswer: "D",
+            hint: "Đại từ quan hệ thay thế cho cả một mệnh đề đứng trước.",
+            explanation: "Dùng 'which' để thay thế cho cả mệnh đề 'I haven't got a passport'. Lưu ý phải có dấu phẩy trước 'which' trong trường hợp này.",
+            type: "single-choice",
+        },
+        {
+            id: 47,
+            question: "The part of town where I live is very noisy at night, ........... makes it difficult to sleep.",
+            translation: "Khu vực của thị trấn nơi tôi sống rất ồn ào vào ban đêm, ........... điều đó khiến tôi khó ngủ.",
+            options: [
+                { id: "A", text: "which" },
+                { id: "B", text: "where" },
+                { id: "C", text: "that" },
+                { id: "D", text: "this" },
+            ],
+            correctAnswer: "A",
+            hint: "Đại từ quan hệ thay thế cho cả một mệnh đề đứng trước.",
+            explanation: "Dùng 'which' để thay thế cho cả mệnh đề 'The part of town where I live is very noisy at night'. Lưu ý phải có dấu phẩy trước 'which' trong trường hợp này.",
+            type: "single-choice",
+        },
+        {
+            id: 48,
+            question: "That is the place .......... the accident occurred.",
+            translation: "Đó là nơi .......... tai nạn đã xảy ra.",
+            options: [
+                { id: "A", text: "where" },
+                { id: "B", text: "which" },
+                { id: "C", text: "on which" },
+                { id: "D", text: "that" },
+            ],
+            correctAnswer: "A",
+            hint: "Trạng từ quan hệ chỉ nơi chốn.",
+            explanation: "Dùng 'where' để chỉ nơi chốn 'the place'.",
+            type: "single-choice",
+        },
+        {
+            id: 49,
+            question: "The boys .......... tennis over there are my new neighbor.",
+            translation: "Những cậu bé .......... đang chơi quần vợt ở đằng kia là hàng xóm mới của tôi.",
+            options: [
+                { id: "A", text: "who plays" },
+                { id: "B", text: "playing" },
+                { id: "C", text: "that playing" },
+                { id: "D", text: "are playing" },
+            ],
+            correctAnswer: "B",
+            hint: "Rút gọn mệnh đề quan hệ dạng chủ động.",
+            explanation: "Mệnh đề đầy đủ là 'who are playing'. Khi mệnh đề quan hệ ở dạng chủ động, ta có thể rút gọn bằng cách dùng V-ing.",
+            type: "single-choice",
+        },
+        {
+            id: 50,
+            question: "He read the Old Man and The Sea, a novel ............. by Ernest Hemingway.",
+            translation: "Anh ấy đã đọc 'Ông già và biển cả', một cuốn tiểu thuyết ............. được viết bởi Ernest Hemingway.",
+            options: [
+                { id: "A", text: "writing" },
+                { id: "B", text: "which written" },
+                { id: "C", text: "written" },
+                { id: "D", text: "that wrote" },
+            ],
+            correctAnswer: "C",
+            hint: "Rút gọn mệnh đề quan hệ dạng bị động.",
+            explanation: "Mệnh đề đầy đủ là 'which was written'. Khi mệnh đề quan hệ ở dạng bị động, ta có thể rút gọn bằng cách dùng V3/V-ed.",
+            type: "single-choice",
+        },
+        {
+            id: 51,
+            question: "No one present noticed anything strange.",
+            translation: "Không ai có mặt nhận thấy bất cứ điều gì kỳ lạ.",
+            options: [
+                { id: "A", text: "The people who were there didn't notice anything strange." },
+                { id: "B", text: "The people who were there didn't notice anything usual." },
+                { id: "C", text: "The people were there didn't notice anything strange." },
+                { id: "D", text: "The people who were there didn't notice something strange." },
+            ],
+            correctAnswer: "A",
+            hint: "Tìm câu đồng nghĩa.",
+            explanation: "'No one present' có nghĩa là 'những người có mặt ở đó'. Câu A diễn đạt lại ý này một cách chính xác.",
+            type: "single-choice",
+        },
+        {
+            id: 52,
+            question: "Jane refused to attend his birthday party, which made him feel sad.",
+            translation: "Jane đã từ chối tham dự bữa tiệc sinh nhật của anh ấy, điều này đã khiến anh ấy cảm thấy buồn.",
+            options: [
+                { id: "A", text: "Jane's refusal to attend his birthday party made him feel sad." },
+                { id: "B", text: "He felt sad not to be able to attend his birthday party." },
+                { id: "C", text: "Jane made him sad despite her refusal to attend his birthday party." },
+                { id: "D", text: "Jane refused to attend his birthday party because it made him feel sad." },
+            ],
+            correctAnswer: "A",
+            hint: "Tìm câu đồng nghĩa.",
+            explanation: "Mệnh đề 'which made him feel sad' có thể được diễn đạt lại bằng cụm danh từ 'Jane's refusal to attend his birthday party'.",
+            type: "single-choice",
+        },
+        {
+            id: 53,
+            question: "The plants may develop differently. They grow on that island.",
+            translation: "Những cái cây có thể phát triển khác nhau. Chúng mọc trên hòn đảo đó.",
+            options: [
+                { id: "A", text: "The plants which grows on that island may develop differently." },
+                { id: "B", text: "The plants which grow on that island may develop differently." },
+                { id: "C", text: "The plants grow on that island may develop differently." },
+                { id: "D", text: "The plants which grow that island may develop differently." },
+            ],
+            correctAnswer: "B",
+            hint: "Kết hợp câu dùng mệnh đề quan hệ.",
+            explanation: "Dùng 'which' để thay thế cho 'The plants'. Vì 'plants' là số nhiều nên động từ 'grow' phải ở dạng nguyên thể.",
+            type: "single-choice",
+        },
+        {
+            id: 54,
+            question: "John Smith is a farmer. I bought his land.",
+            translation: "John Smith là một người nông dân. Tôi đã mua đất của ông ấy.",
+            options: [
+                { id: "A", text: "John Smith, whose land I bought, is a farmer." },
+                { id: "B", text: "John Smith, who is a farmer, whose land I bought." },
+                { id: "C", text: "John Smith, whom I bought his land, is a farmer." },
+                { id: "D", text: "John Smith, a farmer, bought his land." },
+            ],
+            correctAnswer: "A",
+            hint: "Kết hợp câu dùng đại từ quan hệ chỉ sự sở hữu.",
+            explanation: "Dùng 'whose' để thay thế cho tính từ sở hữu 'his'. Mệnh đề quan hệ 'whose land I bought' bổ nghĩa cho 'John Smith'.",
+            type: "single-choice",
+        },
+        {
+            id: 55,
+            question: "The first man who was interviewed was entirely unsuitable.",
+            translation: "Người đàn ông đầu tiên được phỏng vấn hoàn toàn không phù hợp.",
+            options: [
+                { id: "A", text: "The first man interviewing was entirely unsuitable." },
+                { id: "B", text: "The first man to interview was entirely unsuitable." },
+                { id: "C", text: "The first man was interviewed was entirely unsuitable." },
+                { id: "D", text: "The first man to be interviewed was entirely unsuitable." },
+            ],
+            correctAnswer: "D",
+            hint: "Rút gọn mệnh đề quan hệ dùng 'to V'.",
+            explanation: "Khi có các từ như 'the first', 'the second', 'the last', 'the only', ta có thể rút gọn mệnh đề quan hệ bằng 'to V' (chủ động) hoặc 'to be + V3/V-ed' (bị động). Ở đây là bị động ('was interviewed').",
+            type: "single-choice",
+        },
+        {
+            id: 56,
+            question: "Astronomy is the study of planets and stars. It is one of the world's oldest sciences.",
+            translation: "Thiên văn học là nghiên cứu về các hành tinh và các ngôi sao. Nó là một trong những ngành khoa học lâu đời nhất thế giới.",
+            options: [
+                { id: "A", text: "Astronomy which is the study of planets and stars is one of the world's oldest sciences." },
+                { id: "B", text: "Astronomy, who is the study of planets and stars, is one of the world's oldest sciences." },
+                { id: "C", text: "Astronomy is the study of planets and stars which are one of the world's oldest sciences." },
+                { id: "D", text: "Astronomy, the study of planets and stars, is one of the world's oldest sciences." },
+            ],
+            correctAnswer: "D",
+            hint: "Rút gọn mệnh đề quan hệ dùng cụm danh từ đồng cách.",
+            explanation: "Mệnh đề quan hệ 'which is the study of planets and stars' có thể được rút gọn thành một cụm danh từ đồng cách 'the study of planets and stars'.",
+            type: "single-choice",
+        },
+        {
+            id: 57,
+            question: "Our solar system is in a galaxy. It is called the Milky Way.",
+            translation: "Hệ mặt trời của chúng ta ở trong một thiên hà. Nó được gọi là Dải Ngân Hà.",
+            options: [
+                { id: "A", text: "Our solar system is in a galaxy where is called the Milky Way." },
+                { id: "B", text: "Our solar system is in a galaxy called the Milky Way." },
+                { id: "C", text: "Our solar system is in a galaxy, that is called the Milky Way." },
+                { id: "D", text: "Our solar system is in a galaxy calling the Milky Way." },
+            ],
+            correctAnswer: "B",
+            hint: "Rút gọn mệnh đề quan hệ dạng bị động.",
+            explanation: "Mệnh đề đầy đủ là 'a galaxy which is called the Milky Way'. Ta có thể rút gọn mệnh đề quan hệ bị động bằng cách dùng V3/V-ed.",
+            type: "single-choice",
+        },
+        {
+            id: 58,
+            question: "I saw men, women, cats and dogs. They moved round and round.",
+            translation: "Tôi đã thấy đàn ông, phụ nữ, mèo và chó. Chúng di chuyển vòng quanh.",
+            options: [
+                { id: "A", text: "I saw men, women, cats and dogs that moved round and round." },
+                { id: "B", text: "I saw men, women, cats and dogs which moved round and round." },
+                { id: "C", text: "I saw men, women, cats and dogs moved round and round." },
+                { id: "D", text: "I saw men, women, cats and dogs when moved round and round." },
+            ],
+            correctAnswer: "A",
+            hint: "Kết hợp câu dùng đại từ quan hệ chỉ cả người và vật.",
+            explanation: "Khi danh từ phía trước bao gồm cả người ('men, women') và vật ('cats and dogs'), ta dùng 'that'.",
+            type: "single-choice",
+        },
+        {
+            id: 59,
+            question: "One evening, he and the writer went to a restaurant. They had a wonderful meal in it.",
+            translation: "Một buổi tối, anh ấy và nhà văn đã đến một nhà hàng. Họ đã có một bữa ăn tuyệt vời ở đó.",
+            options: [
+                { id: "A", text: "One evening, he and the writer went to a restaurant which they had a wonderful meal." },
+                { id: "B", text: "One evening, he and the writer went to a restaurant where they had a wonderful meal in." },
+                { id: "C", text: "One evening, he and the writer went to a restaurant where they had a wonderful meal." },
+                { id: "D", text: "One evening, he and the writer went to a restaurant they had a wonderful meal." },
+            ],
+            correctAnswer: "C",
+            hint: "Kết hợp câu dùng trạng từ quan hệ chỉ nơi chốn.",
+            explanation: "Dùng 'where' để thay thế cho 'in the restaurant'. 'Where' đã bao gồm giới từ 'in' nên đáp án B bị thừa 'in'.",
+            type: "single-choice",
+        },
+        {
+            id: 60,
+            question: "A number of suggestions were made at the meeting, but most of them were not very practical.",
+            translation: "Một số gợi ý đã được đưa ra tại cuộc họp, nhưng hầu hết chúng không thực tế lắm.",
+            options: [
+                { id: "A", text: "A number of suggestions were made at the meeting, most of them were not very practical." },
+                { id: "B", text: "A number of suggestions were made at the meeting, most of which were not very practical." },
+                { id: "C", text: "A number of suggestions were made at the meeting, but most of which were not very practical." },
+                { id: "D", text: "Most of the suggestions which were made at the meeting were not very practical." },
+            ],
+            correctAnswer: "B",
+            hint: "Kết hợp hai mệnh đề độc lập.",
+            explanation: "Dùng 'most of which' để nối hai mệnh đề, trong đó 'which' thay thế cho 'suggestions'. Không dùng 'but' khi đã có 'most of which'.",
+            type: "single-choice",
+        },
+        {
+            id: 61,
+            question: ".......... in 1937, the Golden Gate Bridge spans the channel at the entrance to San Francisco Bay.",
+            translation: ".......... vào năm 1937, Cầu Cổng Vàng bắc qua kênh ở lối vào Vịnh San Francisco.",
+            options: [
+                { id: "A", text: "Completed" },
+                { id: "B", text: "Having completed" },
+                { id: "C", text: "Completing" },
+                { id: "D", text: "To be completed" },
+            ],
+            correctAnswer: "A",
+            hint: "Rút gọn mệnh đề quan hệ dạng bị động.",
+            explanation: "Câu đầy đủ là 'Which was completed in 1937'. Ta có thể rút gọn mệnh đề quan hệ bị động bằng cách dùng V3/V-ed.",
+            type: "single-choice",
+        },
+        {
+            id: 62,
+            question: "After seeing the movie Centennial, ..........",
+            translation: "Sau khi xem bộ phim Centennial, ..........",
+            options: [
+                { id: "A", text: "the book made many people want to read it." },
+                { id: "B", text: "many people want to read the book." },
+                { id: "C", text: "the reading of the book interested many people." },
+                { id: "D", text: "the book was read by many people." },
+            ],
+            correctAnswer: "B",
+            hint: "Chủ ngữ của hai mệnh đề phải đồng nhất khi rút gọn.",
+            explanation: "Chủ ngữ của hành động 'seeing the movie' là 'many people'. Do đó, chủ ngữ của mệnh đề chính cũng phải là 'many people'.",
+            type: "single-choice",
+        },
+        {
+            id: 63,
+            question: ".......... of the shop, my friend came in.",
+            translation: ".......... khỏi cửa hàng, bạn tôi bước vào.",
+            options: [
+                { id: "A", text: "Coming out" },
+                { id: "B", text: "On coming out" },
+                { id: "C", text: "When coming out" },
+                { id: "D", text: "As I came out" },
+            ],
+            correctAnswer: "D",
+            hint: "Rút gọn mệnh đề trạng ngữ chỉ thời gian. Hai chủ ngữ khác nhau.",
+            explanation: "Vì hai chủ ngữ ('I' và 'my friend') khác nhau, ta không thể rút gọn bằng V-ing. Phải dùng mệnh đề trạng ngữ đầy đủ như 'As I came out'.",
+            type: "single-choice",
+        },
+        {
+            id: 64,
+            question: ".......... two hours over lunch, they left the restaurant.",
+            translation: ".......... hai tiếng cho bữa trưa, họ rời nhà hàng.",
+            options: [
+                { id: "A", text: "Spending" },
+                { id: "B", text: "Having spent" },
+                { id: "C", text: "After spend" },
+                { id: "D", text: "Spent" },
+            ],
+            correctAnswer: "B",
+            hint: "Rút gọn mệnh đề trạng ngữ, hành động xảy ra trước.",
+            explanation: "Hành động 'spend' xảy ra trước hành động 'left', nên khi rút gọn ta dùng 'Having + V3/V-ed'.",
+            type: "single-choice",
+        },
+        {
+            id: 65,
+            question: "I notice the lorry .......... down the hill.",
+            translation: "Tôi nhận thấy chiếc xe tải .......... xuống đồi.",
+            options: [
+                { id: "A", text: "having come" },
+                { id: "B", text: "coming" },
+                { id: "C", text: "to come" },
+                { id: "D", text: "came" },
+            ],
+            correctAnswer: "B",
+            hint: "Cấu trúc với động từ tri giác 'notice'.",
+            explanation: "Sau các động từ tri giác như 'notice', 'see', 'hear', ta dùng 'V-ing' để diễn tả hành động đang diễn ra.",
+            type: "single-choice",
+        },
+        {
+            id: 66,
+            question: ".........., I decided to stop trading with them.",
+            translation: ".........., tôi quyết định ngừng giao dịch với họ.",
+            options: [
+                { id: "A", text: "Despite of the fact that they were the biggest dealer" },
+                { id: "B", text: "Though being the biggest dealer" },
+                { id: "C", text: "Being the biggest dealer" },
+                { id: "D", text: "Even though they were the biggest dealers" },
+            ],
+            correctAnswer: "C",
+            hint: "Rút gọn mệnh đề trạng ngữ chỉ lý do.",
+            explanation: "Câu đầy đủ có thể là 'Because they were the biggest dealer'. Khi rút gọn mệnh đề trạng ngữ có cùng chủ ngữ, ta dùng V-ing.",
+            type: "single-choice",
+        },
+        {
+            id: 67,
+            question: "She told a very funny story, .......... everyone to burst into a laugh.",
+            translation: "Cô ấy kể một câu chuyện rất hài hước, .......... khiến mọi người bật cười.",
+            options: [
+                { id: "A", text: "allowing" },
+                { id: "B", text: "making" },
+                { id: "C", text: "causing" },
+                { id: "D", text: "causing" },
+            ],
+            correctAnswer: "C",
+            hint: "Mệnh đề chỉ kết quả.",
+            explanation: "'Causing' ở đây được dùng để chỉ kết quả của hành động kể chuyện. Đây là một dạng rút gọn mệnh đề kết quả.",
+            type: "single-choice",
+        },
+        {
+            id: 68,
+            question: "I wasn't properly dressed for the party and felt .......... about my appearance.",
+            translation: "Tôi đã không ăn mặc phù hợp cho bữa tiệc và cảm thấy .......... về ngoại hình của mình.",
+            options: [
+                { id: "A", text: "embarrass" },
+                { id: "B", text: "embarrassment" },
+                { id: "C", text: "embarrassing" },
+                { id: "D", text: "embarrassed" },
+            ],
+            correctAnswer: "D",
+            hint: "Tính từ đuôi -ed và -ing.",
+            explanation: "Dùng tính từ đuôi '-ed' (embarrassed) để diễn tả cảm xúc của con người (cảm thấy bị xấu hổ). Dùng '-ing' (embarrassing) để mô tả tính chất của sự vật, sự việc (đáng xấu hổ).",
+            type: "single-choice",
+        },
+        {
+            id: 69,
+            question: "Young people .......... to succeed in life should work hard.",
+            translation: "Những người trẻ .......... thành công trong cuộc sống nên làm việc chăm chỉ.",
+            options: [
+                { id: "A", text: "who wanting" },
+                { id: "B", text: "want" },
+                { id: "C", text: "wanting" },
+                { id: "D", text: "wanted" },
+            ],
+            correctAnswer: "C",
+            hint: "Rút gọn mệnh đề quan hệ dạng chủ động.",
+            explanation: "Câu đầy đủ là 'Young people who want to succeed...'. Khi mệnh đề quan hệ ở dạng chủ động, ta có thể rút gọn bằng V-ing.",
+            type: "single-choice",
+        },
+        {
+            id: 70,
+            question: ".......... is known to be good for digestion.",
+            translation: ".......... được biết là tốt cho tiêu hóa.",
+            options: [
+                { id: "A", text: "Eating yoghurt" },
+                { id: "B", text: "Having eaten yoghurt" },
+                { id: "C", text: "Yoghurt eaten" },
+                { id: "D", text: "Yoghurts" },
+            ],
+            correctAnswer: "A",
+            hint: "Danh động từ (Gerund) làm chủ ngữ.",
+            explanation: "'Eating yoghurt' (việc ăn sữa chua) là một cụm danh động từ, đóng vai trò làm chủ ngữ trong câu.",
+            type: "single-choice",
+        },
+        {
+            id: 71,
+            question: ".......... over the exam results, she rushed home to tell her family the good news.",
+            translation: ".......... về kết quả thi, cô ấy vội vã về nhà để báo tin vui cho gia đình.",
+            options: [
+                { id: "A", text: "Excited" },
+                { id: "B", text: "Excitement" },
+                { id: "C", text: "To excite" },
+                { id: "D", text: "Exciting" },
+            ],
+            correctAnswer: "A",
+            hint: "Rút gọn mệnh đề trạng ngữ, diễn tả cảm xúc.",
+            explanation: "Câu đầy đủ là 'Because she was excited...'. Khi rút gọn mệnh đề có cùng chủ ngữ và động từ là 'to be', ta có thể bỏ chủ ngữ và 'to be', chỉ giữ lại tính từ.",
+            type: "single-choice",
+        },
+        {
+            id: 72,
+            question: "Are there any household chores for .......... which men are better .......... than women ?",
+            translation: "Có công việc nhà nào mà .......... đàn ông làm tốt .......... hơn phụ nữ không?",
+            options: [
+                { id: "A", text: "that/suit" },
+                { id: "B", text: "whose/suited" },
+                { id: "C", text: "which/suited" },
+                { id: "D", text: "which/suit" },
+            ],
+            correctAnswer: "D",
+            hint: "Mệnh đề quan hệ và cấu trúc 'be better suited for'.",
+            explanation: "Đây là câu hỏi nên cấu trúc hơi phức tạp. 'which' thay thế cho 'household chores'. Cấu trúc là 'men are better suited for which (chores)'. Khi đưa 'which' lên đầu, ta có 'for which men are better suited'.",
+            type: "single-choice",
+        },
+        {
+            id: 73,
+            question: "Can you please tell me some information .......... to the job?",
+            translation: "Bạn có thể cho tôi biết một số thông tin .......... đến công việc được không?",
+            options: [
+                { id: "A", text: "relating" },
+                { id: "B", text: "that relate" },
+                { id: "C", text: "that are relating" },
+                { id: "D", text: "related" },
+            ],
+            correctAnswer: "D",
+            hint: "Rút gọn mệnh đề quan hệ dạng bị động.",
+            explanation: "Câu đầy đủ là 'information that is related to the job'. Rút gọn mệnh đề quan hệ bị động, ta dùng V3/V-ed.",
+            type: "single-choice",
+        },
+        {
+            id: 74,
+            question: "The truck .......... crashed into the back of a bus scattering glass everywhere.",
+            translation: "Chiếc xe tải .......... đã đâm vào đuôi một chiếc xe buýt làm kính vỡ tung tóe khắp nơi.",
+            options: [
+                { id: "A", text: "it was loading with empty bottles" },
+                { id: "B", text: "loaded with empty bottles" },
+                { id: "C", text: "which loading with empty bottles" },
+                { id: "D", text: "loading with empty bottles" },
+            ],
+            correctAnswer: "D",
+            hint: "Rút gọn mệnh đề quan hệ dạng chủ động.",
+            explanation: "Câu đầy đủ là 'The truck which was loading with empty bottles...'. Rút gọn mệnh đề quan hệ chủ động, ta dùng V-ing.",
+            type: "single-choice",
+        },
+        {
+            id: 75,
+            question: "None of the people .......... to the party can come.",
+            translation: "Không ai trong số những người .......... đến bữa tiệc có thể đến được.",
+            options: [
+                { id: "A", text: "invite" },
+                { id: "B", text: "invited" },
+                { id: "C", text: "inviting" },
+                { id: "D", text: "to invite" },
+            ],
+            correctAnswer: "B",
+            hint: "Rút gọn mệnh đề quan hệ dạng bị động.",
+            explanation: "Câu đầy đủ là 'people who were invited to the party'. Rút gọn mệnh đề quan hệ bị động, ta dùng V3/V-ed.",
+            type: "single-choice",
+        },
+        {
+            id: 76,
+            question: ".......... the noise and pollution in the city, the Browns move to the countryside.",
+            translation: ".......... tiếng ồn và ô nhiễm ở thành phố, nhà Browns chuyển về nông thôn.",
+            options: [
+                { id: "A", text: "Be tired of" },
+                { id: "B", text: "Being tired of" },
+                { id: "C", text: "Tired of" },
+                { id: "D", text: "Were tired of" },
+            ],
+            correctAnswer: "B",
+            hint: "Rút gọn mệnh đề trạng ngữ chỉ lý do.",
+            explanation: "Câu đầy đủ là 'Because they were tired of...'. Khi rút gọn mệnh đề có cùng chủ ngữ, ta dùng V-ing. 'Being' là dạng V-ing của 'to be'.",
+            type: "single-choice",
+        },
+        {
+            id: 77,
+            question: "the author / released /earned / last year / the book / a lot of money.",
+            translation: "Sắp xếp các từ thành câu có nghĩa.",
+            options: [
+                { id: "A", text: "Released last year, the book earned the author a lot of money." },
+                { id: "B", text: "Released last year, the author earned the book a lot of money." },
+                { id: "C", text: "The author released the book last year a lot of money earned." },
+                { id: "D", text: "The released book last year earned the author a lot of money." },
+            ],
+            correctAnswer: "A",
+            hint: "Sử dụng mệnh đề rút gọn ở đầu câu.",
+            explanation: "Cụm 'Released last year' là mệnh đề rút gọn của 'Which was released last year', bổ nghĩa cho 'the book'.",
+            type: "single-choice",
+        },
+        {
+            id: 78,
+            question: "Do you know any restaurant ..........?",
+            translation: "Bạn có biết nhà hàng nào .......... không?",
+            options: [
+                { id: "A", text: "have a really good meal" },
+                { id: "B", text: "where we can have a really good meal" },
+                { id: "C", text: "has a really good meal" },
+                { id: "D", text: "that we can have a really good meal" },
+            ],
+            correctAnswer: "B",
+            hint: "Mệnh đề quan hệ chỉ nơi chốn.",
+            explanation: "'where' được dùng để bổ nghĩa cho 'restaurant'. 'where we can have a really good meal' có nghĩa là 'nơi mà chúng ta có thể có một bữa ăn ngon'.",
+            type: "single-choice",
+        },
+        {
+            id: 79,
+            question: "The secretaries were the only people ..........",
+            translation: "Các thư ký là những người duy nhất ..........",
+            options: [
+                { id: "A", text: "to get a pay rise" },
+                { id: "B", text: "getting a pay rise" },
+                { id: "C", text: "who to get a pay rise" },
+                { id: "D", text: "to whom get a pay rise" },
+            ],
+            correctAnswer: "A",
+            hint: "Rút gọn mệnh đề quan hệ dùng 'to V' sau 'the only'.",
+            explanation: "Sau 'the only people', mệnh đề 'who got a pay rise' có thể được rút gọn thành 'to get a pay rise'.",
+            type: "single-choice",
+        },
+        {
+            id: 80,
+            question: "The reason .......... was that her mother fell seriously ill.",
+            translation: "Lý do .......... là mẹ cô ấy bị ốm nặng.",
+            options: [
+                { id: "A", text: "where she didn't come" },
+                { id: "B", text: "when she didn't come" },
+                { id: "C", text: "she didn't come" },
+                { id: "D", text: "for which she didn't come" },
+            ],
+            correctAnswer: "D",
+            hint: "Trạng từ quan hệ chỉ lý do 'why' có thể thay bằng 'for which'.",
+            explanation: "'The reason why she didn't come' hoặc 'The reason for which she didn't come'. 'why' có thể được lược bỏ.",
+            type: "single-choice",
+        },
+        {
+            id: 81,
+            question: "<u>There are</u> about 500 species of poisonous snakes, <u>200 of them</u> <u>are</u> harmful <u>to man</u>.",
+            translation: "Có khoảng 500 loài rắn độc, 200 loài trong số đó có hại cho con người.",
+            options: [
+                { id: "A", text: "There are" },
+                { id: "B", text: "200 of them" },
+                { id: "C", text: "are" },
+                { id: "D", text: "to man" },
+            ],
+            correctAnswer: "B",
+            hint: "Nối hai mệnh đề độc lập.",
+            explanation: "Để nối hai mệnh đề, không thể dùng '200 of them'. Phải dùng '200 of which'.",
+            type: "single-choice",
+        },
+        {
+            id: 82,
+            question: "The electric cooker <u>who</u> is <u>wrapped</u> in the box <u>is made</u> of <u>steel</u>.",
+            translation: "Nồi cơm điện, cái mà được gói trong hộp, được làm bằng thép.",
+            options: [
+                { id: "A", text: "who" },
+                { id: "B", text: "wrapped" },
+                { id: "C", text: "is made" },
+                { id: "D", text: "steel" },
+            ],
+            correctAnswer: "A",
+            hint: "Đại từ quan hệ chỉ vật.",
+            explanation: "'The electric cooker' là vật, nên phải dùng 'which' hoặc 'that', không dùng 'who'.",
+            type: "single-choice",
+        },
+        {
+            id: 83,
+            question: "The legal age <u>which</u> a person is <u>considered to be</u> an adult <u>is</u> <u>customarily</u> 18.",
+            translation: "Độ tuổi hợp pháp mà một người được coi là người lớn thường là 18.",
+            options: [
+                { id: "A", text: "which" },
+                { id: "B", text: "considered to be" },
+                { id: "C", text: "is" },
+                { id: "D", text: "customarily" },
+            ],
+            correctAnswer: "A",
+            hint: "Trạng từ quan hệ chỉ nơi chốn hoặc thời gian.",
+            explanation: "'The legal age' là một điểm thời gian, nên phải dùng 'at which' hoặc 'when'. Chỗ trống phải là 'at which'.",
+            type: "single-choice",
+        },
+        {
+            id: 84,
+            question: "The gardener used the scissors <u>which</u> he had bought <u>them</u> from a village shop <u>to cut</u> the <u>flowers</u>.",
+            translation: "Người làm vườn đã dùng chiếc kéo mà ông đã mua chúng từ một cửa hàng trong làng để cắt hoa.",
+            options: [
+                { id: "A", text: "which" },
+                { id: "B", text: "them" },
+                { id: "C", text: "to cut" },
+                { id: "D", text: "flowers" },
+            ],
+            correctAnswer: "B",
+            hint: "Thừa tân ngữ trong mệnh đề quan hệ.",
+            explanation: "Đại từ quan hệ 'which' đã thay thế cho 'the scissors' làm tân ngữ, nên không cần 'them' nữa.",
+            type: "single-choice",
+        },
+        {
+            id: 85,
+            question: "The area with <u>the greatest number</u> of thunderstorms each year <u>is</u> the interior of the Florida peninsula, <u>which</u> the Atlantic and Gulf airstreams <u>meet</u>.",
+            translation: "Khu vực có số lượng giông bão lớn nhất mỗi năm là nội địa của bán đảo Florida, nơi các dòng không khí Đại Tây Dương và Vịnh gặp nhau.",
+            options: [
+                { id: "A", text: "the greatest number" },
+                { id: "B", text: "is" },
+                { id: "C", text: "which" },
+                { id: "D", text: "meet" },
+            ],
+            correctAnswer: "C",
+            hint: "Trạng từ quan hệ chỉ nơi chốn.",
+            explanation: "Chỗ trống cần một trạng từ quan hệ chỉ nơi chốn để bổ nghĩa cho 'the interior of the Florida peninsula'. Phải dùng 'where'.",
+            type: "single-choice",
+        },
+        {
+            id: 86,
+            question: "Aloha is a Hawaiian word <u>meaning</u> ‘love’, <u>that</u> can be used <u>to say</u> hello or <u>goodbye</u>.",
+            translation: "Aloha là một từ Hawaii có nghĩa là 'tình yêu', từ mà có thể được dùng để nói xin chào hoặc tạm biệt.",
+            options: [
+                { id: "A", text: "meaning" },
+                { id: "B", text: "that" },
+                { id: "C", text: "to say" },
+                { id: "D", text: "goodbye" },
+            ],
+            correctAnswer: "B",
+            hint: "Đại từ quan hệ trong mệnh đề không xác định.",
+            explanation: "Sau dấu phẩy (trong mệnh đề không xác định), không được dùng 'that'. Phải dùng 'which'.",
+            type: "single-choice",
+        },
+        {
+            id: 87,
+            question: "People <u>whose</u> exercise frequently <u>have</u> greater physical endurance than those <u>who</u> <u>doesn't</u>.",
+            translation: "Những người mà tập thể dục thường xuyên có sức bền thể chất lớn hơn những người không tập.",
+            options: [
+                { id: "A", text: "whose" },
+                { id: "B", text: "have" },
+                { id: "C", text: "who" },
+                { id: "D", text: "doesn't" },
+            ],
+            correctAnswer: "A",
+            hint: "Đại từ quan hệ chỉ người, làm chủ ngữ.",
+            explanation: "Chủ ngữ của động từ 'exercise' là 'People'. Cần một đại từ quan hệ chỉ người làm chủ ngữ, đó là 'who'. 'Whose' chỉ sự sở hữu.",
+            type: "single-choice",
+        },
+        {
+            id: 88,
+            question: "I <u>have</u> always wanted <u>to visit</u> Paris, <u>that</u> is the capital <u>of</u> France.",
+            translation: "Tôi đã luôn muốn đến thăm Paris, nơi là thủ đô của nước Pháp.",
+            options: [
+                { id: "A", text: "have" },
+                { id: "B", text: "to visit" },
+                { id: "C", text: "that" },
+                { id: "D", text: "of" },
+            ],
+            correctAnswer: "C",
+            hint: "Đại từ quan hệ trong mệnh đề không xác định.",
+            explanation: "Sau dấu phẩy (trong mệnh đề không xác định), không được dùng 'that'. Phải dùng 'which'.",
+            type: "single-choice",
+        },
+        {
+            id: 89,
+            question: "Shakespeare, <u>who</u> works are famous <u>all over</u> the world, <u>was</u> an English <u>writer</u>.",
+            translation: "Shakespeare, người có các tác phẩm nổi tiếng khắp thế giới, là một nhà văn người Anh.",
+            options: [
+                { id: "A", text: "who" },
+                { id: "B", text: "all over" },
+                { id: "C", text: "was" },
+                { id: "D", text: "writer" },
+            ],
+            correctAnswer: "A",
+            hint: "Đại từ quan hệ chỉ sự sở hữu.",
+            explanation: "Để chỉ 'tác phẩm của Shakespeare' (his works), ta phải dùng đại từ quan hệ chỉ sự sở hữu là 'whose'.",
+            type: "single-choice",
+        },
+        {
+            id: 90,
+            question: "The water temperature <u>in a spring</u> depends <u>on that</u> of the soil through <u>where</u> the water <u>flows</u>.",
+            translation: "Nhiệt độ nước trong một con suối phụ thuộc vào nhiệt độ của đất mà nước chảy qua đó.",
+            options: [
+                { id: "A", text: "in a spring" },
+                { id: "B", text: "on that" },
+                { id: "C", text: "where" },
+                { id: "D", text: "flows" },
+            ],
+            correctAnswer: "C",
+            hint: "Đại từ quan hệ chỉ vật, làm tân ngữ sau giới từ.",
+            explanation: "Câu đầy đủ là 'through which the water flows'. 'where' không đi sau giới từ 'through'.",
+            type: "single-choice",
+        },
+        {
+            id: 91,
+            question: "Nam’s parents were here last week and gave us a present. Nam’s parents, ________, gave us a present.",
+            translation: "Bố mẹ của Nam đã ở đây tuần trước và tặng chúng tôi một món quà. Bố mẹ của Nam, ________, đã tặng chúng tôi một món quà.",
+            options: [
+                { id: "A", text: "who were here last week" },
+                { id: "B", text: "which were here last week" },
+                { id: "C", text: "whose were here last week" },
+                { id: "D", text: "whom were here last week" }
+            ],
+            correctAnswer: "A",
+            hint: "Mệnh đề quan hệ không xác định, bổ nghĩa cho danh từ chỉ người.",
+            explanation: "'Nam’s parents' là người, và mệnh đề phụ làm rõ họ là ai. 'who' được dùng làm chủ ngữ cho động từ 'were' trong mệnh đề quan hệ.",
+            type: "single-choice"
+        },
+        {
+            id: 92,
+            question: "I lent you a book. It was written by a friend of mine. She lives in France. The book I lent you ________.",
+            translation: "Tôi đã cho bạn mượn một cuốn sách. Nó được viết bởi một người bạn của tôi. Cô ấy sống ở Pháp. Cuốn sách tôi cho bạn mượn ________.",
+            options: [
+                { id: "A", text: "was written by a friend who lives in France" },
+                { id: "B", text: "wrote by a friend who lives in France" },
+                { id: "C", text: "was written by a friend which lives in France" },
+                { id: "D", text: "written by a friend who lives in France" }
+            ],
+            correctAnswer: "A",
+            hint: "Kết hợp câu, cần có động từ chính cho mệnh đề chính.",
+            explanation: "Câu cần một động từ chính. 'The book (which/that) I lent you' là chủ ngữ, và 'was written...' là vị ngữ. Mệnh đề quan hệ 'who lives in France' bổ nghĩa cho 'a friend'.",
+            type: "single-choice"
+        },
+        {
+            id: 93,
+            question: "I used to own a dog. People came to the door. The dog never barked at them. The dog ________ never barked at them.",
+            translation: "Tôi từng có một con chó. Mọi người đến cửa. Con chó không bao giờ sủa họ. Con chó ________ không bao giờ sủa họ.",
+            options: [
+                { id: "A", text: "which I used to own" },
+                { id: "B", text: "I used to own which" },
+                { id: "C", text: "I used to own who" },
+                { id: "D", text: "whom I used to own" }
+            ],
+            correctAnswer: "A",
+            hint: "Mệnh đề quan hệ xác định, bổ nghĩa cho danh từ chỉ vật.",
+            explanation: "'which I used to own' là mệnh đề quan hệ bổ nghĩa cho 'The dog'. 'which' thay thế cho 'the dog' và làm tân ngữ của 'own'.",
+            type: "single-choice"
+        },
+        {
+            id: 94,
+            question: "I bought my car from a woman. She lives in a house. You can see the house over there. The woman I bought my car from ________.",
+            translation: "Tôi đã mua xe của mình từ một người phụ nữ. Cô ấy sống trong một ngôi nhà. Bạn có thể thấy ngôi nhà ở đằng kia. Người phụ nữ mà tôi mua xe từ ________.",
+            options: [
+                { id: "A", text: "lives in the house which you can see over there" },
+                { id: "B", text: "live in a house you can see" },
+                { id: "C", text: "who live in the house you can see" },
+                { id: "D", text: "living in a house you can see" }
+            ],
+            correctAnswer: "A",
+            hint: "Chủ ngữ là số ít ('The woman'), động từ chính phải chia tương ứng.",
+            explanation: "'The woman (whom) I bought my car from' là chủ ngữ số ít, vì vậy động từ chính phải là 'lives'. Mệnh đề 'which you can see over there' bổ nghĩa cho 'the house'.",
+            type: "single-choice"
+        },
+        {
+            id: 95,
+            question: "My friend Bill has decided to buy a motorbike. His car was stolen last week. My friend Bill, ________, has decided to buy a motorbike.",
+            translation: "Bạn tôi, Bill, đã quyết định mua một chiếc xe máy. Xe của anh ấy đã bị đánh cắp tuần trước. Bạn tôi, Bill, ________, đã quyết định mua một chiếc xe máy.",
+            options: [
+                { id: "A", text: "whose car was stolen last week" },
+                { id: "B", text: "who car was stolen last week" },
+                { id: "C", text: "that car was stolen last week" },
+                { id: "D", text: "which car was stolen last week" }
+            ],
+            correctAnswer: "A",
+            hint: "Mệnh đề quan hệ không xác định, chỉ sự sở hữu.",
+            explanation: "Để chỉ 'chiếc xe của Bill' (his car), ta dùng đại từ quan hệ chỉ sự sở hữu 'whose'. Mệnh đề này được đặt giữa hai dấu phẩy.",
+            type: "single-choice"
+        },
+        {
+            id: 96,
+            question: "I bought a new car. It cost me a lot of money. The new car ________.",
+            translation: "Tôi đã mua một chiếc xe mới. Nó tốn của tôi rất nhiều tiền. Chiếc xe mới ________.",
+            options: [
+                { id: "A", text: "I bought cost me a lot of money" },
+                { id: "B", text: "I bought costs me a lot of money" },
+                { id: "C", text: "I buy cost me a lot of money" },
+                { id: "D", text: "which I buy cost a lot of money" }
+            ],
+            correctAnswer: "A",
+            hint: "Thì của động từ phải thống nhất. Hành động đã xảy ra trong quá khứ.",
+            explanation: "'The new car (that) I bought' là chủ ngữ. Hành động 'cost' đã xảy ra trong quá khứ, nên giữ nguyên dạng 'cost' (quá khứ của 'cost' là 'cost').",
+            type: "single-choice"
+        },
+        {
+            id: 97,
+            question: "I just talked to the girl. I can never remember her name. I just talked to the girl ________ I can never remember.",
+            translation: "Tôi vừa nói chuyện với cô gái. Tôi không bao giờ nhớ được tên cô ấy. Tôi vừa nói chuyện với cô gái ________ tôi không bao giờ nhớ được.",
+            options: [
+                { id: "A", text: "whose name" },
+                { id: "B", text: "which name" },
+                { id: "C", text: "who name" },
+                { id: "D", text: "whom name" }
+            ],
+            correctAnswer: "A",
+            hint: "Đại từ quan hệ chỉ sự sở hữu.",
+            explanation: "Để chỉ 'tên của cô gái' (her name), ta dùng đại từ quan hệ chỉ sự sở hữu 'whose'. Cụm 'whose name' làm tân ngữ cho 'remember'.",
+            type: "single-choice"
+        },
+        {
+            id: 98,
+            question: "The librarian wants to speak to a man. We borrowed his car yesterday. The librarian wants to speak to the man ________ we borrowed yesterday.",
+            translation: "Người thủ thư muốn nói chuyện với một người đàn ông. Chúng tôi đã mượn xe của ông ấy hôm qua. Người thủ thư muốn nói chuyện với người đàn ông ________ chúng tôi đã mượn hôm qua.",
+            options: [
+                { id: "A", text: "whose car" },
+                { id: "B", text: "who car" },
+                { id: "C", text: "which car" },
+                { id: "D", text: "whom car" }
+            ],
+            correctAnswer: "A",
+            hint: "Đại từ quan hệ chỉ sự sở hữu.",
+            explanation: "Để chỉ 'chiếc xe của người đàn ông' (his car), ta dùng đại từ quan hệ chỉ sự sở hữu 'whose'. Cụm 'whose car' làm tân ngữ cho động từ 'borrowed'.",
+            type: "single-choice"
+        },
+        {
+            id: 99,
+            question: "My friend Albert has decided to buy a motorbike. His car was stolen. My friend Albert, ________, has decided to buy a motorbike.",
+            translation: "Bạn tôi, Albert, đã quyết định mua một chiếc xe máy. Xe của anh ấy đã bị đánh cắp. Bạn tôi, Albert, ________, đã quyết định mua một chiếc xe máy.",
+            options: [
+                { id: "A", text: "whose car was stolen" },
+                { id: "B", text: "who car was stolen" },
+                { id: "C", text: "that car was stolen" },
+                { id: "D", text: "which car was stolen" }
+            ],
+            correctAnswer: "A",
+            hint: "Mệnh đề quan hệ không xác định, chỉ sự sở hữu.",
+            explanation: "Để chỉ 'chiếc xe của Albert' (his car), ta dùng đại từ quan hệ chỉ sự sở hữu 'whose'. Mệnh đề này được đặt giữa hai dấu phẩy vì 'My friend Albert' là danh từ riêng.",
+            type: "single-choice"
+        },
+        {
+            id: 100,
+            question: "Carol is a vegetarian. I cooked a meal for her last week. Carol, ________, is a vegetarian.",
+            translation: "Carol là người ăn chay. Tôi đã nấu một bữa ăn cho cô ấy tuần trước. Carol, ________, là người ăn chay.",
+            options: [
+                { id: "A", text: "for whom I cooked a meal last week" },
+                { id: "B", text: "who I cooked a meal for last week" },
+                { id: "C", text: "whom I cooked a meal for her last week" },
+                { id: "D", text: "that I cooked a meal for last week" }
+            ],
+            correctAnswer: "A",
+            hint: "Đại từ quan hệ làm tân ngữ của giới từ trong mệnh đề không xác định.",
+            explanation: "Mệnh đề gốc là 'I cooked a meal for her'. 'her' được thay bằng 'whom'. Giới từ 'for' được đảo lên trước 'whom'. Không dùng 'that' và không lặp lại 'her'.",
+            type: "single-choice"
+        },
+        {
+            id: 101,
+            question: "I was sitting next to a boy in the exam. He told me the answer. The boy I was sitting next to in the exam ________.",
+            translation: "Tôi đã ngồi cạnh một cậu bé trong kỳ thi. Cậu ấy đã nói cho tôi câu trả lời. Cậu bé mà tôi ngồi cạnh trong kỳ thi ________.",
+            options: [
+                { id: "A", text: "told me the answer" },
+                { id: "B", text: "who told me the answer" },
+                { id: "C", text: "which told me the answer" },
+                { id: "D", text: "that told me the answer" }
+            ],
+            correctAnswer: "A",
+            hint: "Câu đã có chủ ngữ, chỉ cần thêm vị ngữ.",
+            explanation: "'The boy (whom) I was sitting next to in the exam' là một cụm danh từ đóng vai trò chủ ngữ. Câu chỉ cần thêm động từ chính là 'told me the answer'.",
+            type: "single-choice"
+        },
+        {
+            id: 102,
+            question: "I bought a new computer. It costs a lot of money. The new computer ________.",
+            translation: "Tôi đã mua một cái máy tính mới. Nó tốn rất nhiều tiền. Cái máy tính mới ________.",
+            options: [
+                { id: "A", text: "I bought costs a lot of money" },
+                { id: "B", text: "which I buy cost a lot of money" },
+                { id: "C", text: "that I buy costs a lot of money" },
+                { id: "D", text: "I buying cost a lot of money" }
+            ],
+            correctAnswer: "A",
+            hint: "Thì của động từ phải thống nhất. Hành động 'bought' ở quá khứ, nhưng 'costs' ở hiện tại (sự thật).",
+            explanation: "'The new computer (that) I bought' là chủ ngữ. Động từ 'buy' ở quá khứ ('bought'), nhưng 'cost' ở hiện tại ('costs') để chỉ một sự thật về giá cả của nó.",
+            type: "single-choice"
+        },
+        {
+            id: 103,
+            question: "My neighbours have three children. The children make a lot of noise. My neighbours never apologise. My neighbours, ________, never apologise.",
+            translation: "Hàng xóm của tôi có ba đứa con. Những đứa trẻ làm ồn rất nhiều. Hàng xóm của tôi không bao giờ xin lỗi. Hàng xóm của tôi, ________, không bao giờ xin lỗi.",
+            options: [
+                { id: "A", text: "whose three children make a lot of noise" },
+                { id: "B", text: "who children make a lot of noise" },
+                { id: "C", text: "which children make a lot of noise" },
+                { id: "D", text: "their children make a lot of noise" }
+            ],
+            correctAnswer: "A",
+            hint: "Mệnh đề quan hệ không xác định, chỉ sự sở hữu.",
+            explanation: "Để chỉ 'những đứa con của hàng xóm' (their children), ta dùng đại từ quan hệ 'whose'.",
+            type: "single-choice"
+        },
+        {
+            id: 104,
+            question: "Do you know the woman? We are sharing a flat with her son. Do you know the woman ________ we are sharing a flat?",
+            translation: "Bạn có biết người phụ nữ đó không? Chúng tôi đang ở chung căn hộ với con trai của cô ấy. Bạn có biết người phụ nữ ________ chúng tôi đang ở chung căn hộ không?",
+            options: [
+                { id: "A", text: "whose son" },
+                { id: "B", text: "who son" },
+                { id: "C", text: "that son" },
+                { id: "D", text: "whom son" }
+            ],
+            correctAnswer: "A",
+            hint: "Câu hỏi cần đại từ quan hệ chỉ sự sở hữu và giới từ đi kèm.",
+            explanation: "Câu đầy đủ là 'Do you know the woman with whose son we are sharing a flat?'. Trong câu hỏi, giới từ 'with' đã được ẩn đi ở cuối. Ta cần 'whose son' để chỉ 'con trai của cô ấy'.",
+            type: "single-choice"
+        },
+        {
+            id: 105,
+            question: "The ship hit an iceberg and sank. Warning messages had been sent to it. The ship ignored these. The ship, ________, sank after hitting an iceberg.",
+            translation: "Con tàu đã đâm vào một tảng băng và chìm. Các thông điệp cảnh báo đã được gửi đến nó. Con tàu đã phớt lờ chúng. Con tàu, ________, đã chìm sau khi đâm vào một tảng băng.",
+            options: [
+                { id: "A", text: "which ignored warning messages" },
+                { id: "B", text: "who ignored warning messages" },
+                { id: "C", text: "that ignoring warning messages" },
+                { id: "D", text: "whose ignored warning messages" }
+            ],
+            correctAnswer: "A",
+            hint: "Mệnh đề quan hệ không xác định, bổ nghĩa cho vật.",
+            explanation: "Dùng 'which' để thay thế cho 'The ship' và làm chủ ngữ cho động từ 'ignored'. Không dùng 'that' trong mệnh đề không xác định.",
+            type: "single-choice"
+        },
+        {
+            id: 106,
+            question: "The postman realized I was on holiday. You had sent me a parcel. The postman left it next door. The postman, ________, left it next door.",
+            translation: "Người đưa thư nhận ra tôi đang đi nghỉ. Bạn đã gửi cho tôi một bưu kiện. Người đưa thư đã để nó ở nhà bên cạnh. Người đưa thư, ________, đã để nó ở nhà bên cạnh.",
+            options: [
+                { id: "A", text: "to whom you had sent a parcel" },
+                { id: "B", text: "who you had sent a parcel" },
+                { id: "C", text: "that you sent a parcel" },
+                { id: "D", text: "whom you sent parcel" }
+            ],
+            correctAnswer: "A",
+            hint: "Mệnh đề quan hệ không xác định, 'whom' làm tân ngữ của giới từ.",
+            explanation: "Mệnh đề quan hệ bổ nghĩa cho 'The postman'. Câu gốc là 'You had sent a parcel to me'. 'me' được thay bằng 'whom', và giới từ 'to' được đảo lên trước. Tuy nhiên, logic câu này không hoàn toàn chính xác vì mệnh đề quan hệ nên bổ nghĩa cho 'me' chứ không phải 'postman'. Giả sử câu hỏi muốn kiểm tra cấu trúc, A là đúng nhất.",
+            type: "single-choice"
+        },
+        {
+            id: 107,
+            question: "We went to a beach on the first day of our holiday. It was covered in seaweed. This smelled a lot. The beach we went to ________.",
+            translation: "Chúng tôi đã đến một bãi biển vào ngày đầu tiên của kỳ nghỉ. Nó bị bao phủ bởi rong biển. Thứ này có mùi rất nặng. Bãi biển mà chúng tôi đã đến ________.",
+            options: [
+                { id: "A", text: "was covered in seaweed that smelled a lot" },
+                { id: "B", text: "covered in seaweed which smelled a lot" },
+                { id: "C", text: "covering seaweed smelled a lot" },
+                { id: "D", text: "was covered seaweed that smelled a lot" }
+            ],
+            correctAnswer: "A",
+            hint: "Câu cần có động từ chính và mệnh đề quan hệ.",
+            explanation: "'The beach (which) we went to' là chủ ngữ. 'was covered in seaweed' là vị ngữ. Mệnh đề quan hệ 'that smelled a lot' bổ nghĩa cho 'seaweed'.",
+            type: "single-choice"
+        },
+        {
+            id: 108,
+            question: "I lost my wallet last week. It was found by a workman. He was digging a hole in the street outside our house. The wallet ________ was found by a workman who was digging outside our house.",
+            translation: "Tôi đã mất ví tuần trước. Nó được tìm thấy bởi một công nhân. Ông ấy đang đào một cái hố trên đường bên ngoài nhà chúng tôi. Chiếc ví ________ được tìm thấy bởi một công nhân đang đào đất bên ngoài nhà chúng tôi.",
+            options: [
+                { id: "A", text: "I lost last week" },
+                { id: "B", text: "which I lose last week" },
+                { id: "C", text: "that I lose last week" },
+                { id: "D", text: "lost last week" }
+            ],
+            correctAnswer: "A",
+            hint: "Thêm mệnh đề quan hệ để xác định danh từ.",
+            explanation: "Mệnh đề quan hệ 'I lost last week' (rút gọn của 'which I lost last week') được thêm vào để làm rõ 'The wallet' nào đang được nói đến. Động từ 'lose' phải ở thì quá khứ ('lost').",
+            type: "single-choice"
+        },
+        {
+            id: 109,
+            question: "A woman's jewels were stolen. A police officer was staying in the same hotel. The woman was interviewed by him. The woman ________ was interviewed by a police officer staying in the same hotel.",
+            translation: "Trang sức của một người phụ nữ đã bị đánh cắp. Một sĩ quan cảnh sát đang ở cùng khách sạn. Người phụ nữ đã được ông ta phỏng vấn. Người phụ nữ ________ đã được phỏng vấn bởi một sĩ quan cảnh sát đang ở cùng khách sạn.",
+            options: [
+                { id: "A", text: "whose jewels were stolen" },
+                { id: "B", text: "who jewels were stolen" },
+                { id: "C", text: "which jewels were stolen" },
+                { id: "D", text: "that jewels were stolen" }
+            ],
+            correctAnswer: "A",
+            hint: "Thêm mệnh đề quan hệ chỉ sự sở hữu để xác định danh từ.",
+            explanation: "Mệnh đề quan hệ 'whose jewels were stolen' được thêm vào để làm rõ 'The woman' nào đang được nói đến. 'whose' chỉ sự sở hữu ('her jewels').",
+            type: "single-choice"
+        },
+        {
+            id: 110,
+            question: "A teenager scored a goal. It was the most beautiful of the match. The goal ________ was the most beautiful of the match.",
+            translation: "Một thiếu niên đã ghi một bàn thắng. Đó là bàn thắng đẹp nhất trận đấu. Bàn thắng ________ là bàn thắng đẹp nhất trận đấu.",
+            options: [
+                { id: "A", text: "scoring by a teenager" },
+                { id: "B", text: "scored by a teenager" },
+                { id: "C", text: "who scored by a teenager" },
+                { id: "D", text: "was scored by a teenager" }
+            ],
+            correctAnswer: "B",
+            hint: "Rút gọn mệnh đề quan hệ dạng bị động.",
+            explanation: "Mệnh đề đầy đủ là 'The goal which was scored by a teenager'. Khi mệnh đề quan hệ ở dạng bị động, ta có thể rút gọn bằng cách bỏ 'which was' và chỉ giữ lại V3/V-ed ('scored').",
+            type: "single-choice"
+        }
+    ];
 
-      // START: data/quizData.ts
-      const quizData = [
-        // Page 1
-        {
-          id: 1,
-          question: "Sunday is the day .......... I go to Water park with my kids.",
-          options: [
-            { id: 'A', text: 'when' },
-            { id: 'B', text: 'where' },
-            { id: 'C', text: 'why' },
-            { id: 'D', text: 'which' },
-          ],
-          correctAnswerId: 'A',
-          hint: "Sử dụng trạng từ quan hệ 'when' để chỉ thời gian (the day).",
-          explanation: "Câu này cần một trạng từ quan hệ chỉ thời gian để bổ nghĩa cho 'the day'. 'when' là lựa chọn chính xác. 'when' có thể thay thế cho 'on which'.",
-          type: 'multiple-choice',
-        },
-        {
-          id: 2,
-          question: "That was the reason .......... he didn't marry her.",
-          options: [
-            { id: 'A', text: 'when' },
-            { id: 'B', text: 'where' },
-            { id: 'C', text: 'why' },
-            { id: 'D', text: 'which' },
-          ],
-          correctAnswerId: 'C',
-          hint: "Sử dụng trạng từ quan hệ 'why' để chỉ lý do (the reason).",
-          explanation: "Sau 'the reason' ta dùng trạng từ quan hệ 'why' để chỉ lý do. 'why' có thể thay thế cho 'for which'.",
-          type: 'multiple-choice',
-        },
-        {
-          id: 3,
-          question: "An architect is someone .......... designs buildings.",
-          options: [
-            { id: 'A', text: 'who' },
-            { id: 'B', text: 'whom' },
-            { id: 'C', text: 'which' },
-            { id: 'D', text: 'whose' },
-          ],
-          correctAnswerId: 'A',
-          hint: "Sử dụng đại từ quan hệ 'who' để chỉ người và làm chủ ngữ trong mệnh đề quan hệ.",
-          explanation: "'who' được dùng để thay thế cho danh từ chỉ người ('someone') và làm chủ ngữ cho động từ 'designs'.",
-          type: 'multiple-choice',
-        },
-        {
-          id: 4,
-          question: "The boy to .......... I lent my money is poor.",
-          options: [
-            { id: 'A', text: 'who' },
-            { id: 'B', text: 'whom' },
-            { id: 'C', text: 'which' },
-            { id: 'D', text: 'that' },
-          ],
-          correctAnswerId: 'B',
-          hint: "Sau giới từ (to), ta dùng 'whom' cho người hoặc 'which' cho vật.",
-          explanation: "Đại từ quan hệ ở đây làm tân ngữ cho giới từ 'to'. Do đó, ta phải dùng 'whom' để chỉ người ('The boy'). Cấu trúc: preposition + whom.",
-          type: 'multiple-choice',
-        },
-        {
-          id: 5,
-          question: "The land and the people .......... I have met are nice.",
-          options: [
-            { id: 'A', text: 'who' },
-            { id: 'B', text: 'whom' },
-            { id: 'C', text: 'which' },
-            { id: 'D', text: 'that' },
-          ],
-          correctAnswerId: 'D',
-          hint: "Khi danh từ tiền tố bao gồm cả người và vật, ta dùng 'that'.",
-          explanation: "Danh từ tiền tố là 'The land' (vật) and 'the people' (người). Trong trường hợp này, đại từ quan hệ duy nhất có thể dùng là 'that'.",
-          type: 'multiple-choice',
-        },
-        {
-          id: 6,
-          question: "I can answer the question .......... you say is very difficult.",
-          options: [
-            { id: 'A', text: 'which' },
-            { id: 'B', text: 'who' },
-            { id: 'C', text: 'whom' },
-            { id: 'D', text: 'whose' },
-          ],
-          correctAnswerId: 'A',
-          hint: "Sử dụng 'which' hoặc 'that' để chỉ vật ('the question'). Đại từ quan hệ ở đây làm chủ ngữ cho động từ 'is'.",
-          explanation: "Mệnh đề chính là 'I can answer the question'. Mệnh đề phụ là '... is very difficult'. 'you say' là mệnh đề chen vào. Đại từ quan hệ thay thế cho 'the question' (vật) và làm chủ ngữ của 'is', do đó ta dùng 'which' hoặc 'that'.",
-          type: 'multiple-choice',
-        },
-        {
-          id: 7,
-          question: "This is the place .......... the battle took place ten years ago.",
-          options: [
-            { id: 'A', text: 'which' },
-            { id: 'B', text: 'in where' },
-            { id: 'C', text: 'where' },
-            { id: 'D', text: 'from where' },
-          ],
-          correctAnswerId: 'C',
-          hint: "Sử dụng trạng từ quan hệ 'where' để chỉ nơi chốn (the place).",
-          explanation: "'where' được dùng để thay thế cho một cụm từ chỉ nơi chốn ('at/in the place'). 'where' = 'in which'. Không dùng giới từ trước 'where'.",
-          type: 'multiple-choice',
-        },
-        {
-          id: 8,
-          question: "Sunday is the day .......... which we usually go fishing.",
-          options: [
-            { id: 'A', text: 'during' },
-            { id: 'B', text: 'at' },
-            { id: 'C', text: 'in' },
-            { id: 'D', text: 'on' },
-          ],
-          correctAnswerId: 'D',
-          hint: "Giới từ đi với ngày (day) là 'on'. Cấu trúc: on + which day.",
-          explanation: "Ta nói 'go fishing on Sunday'. Do đó, giới từ cần điền là 'on'. Mệnh đề đầy đủ là 'we usually go fishing on which (day)'.",
-          type: 'multiple-choice',
-        },
-        {
-          id: 9,
-          question: "This is the last time .......... I speak to you.",
-          options: [
-            { id: 'A', text: 'of which' },
-            { id: 'B', text: 'whose' },
-            { id: 'C', text: 'that' },
-            { id: 'D', text: 'which' },
-          ],
-          correctAnswerId: 'C',
-          hint: "Sau các từ chỉ thứ tự (the first, the second...), so sánh nhất (the best...), và các từ như 'the last', 'the only', ta thường dùng 'that'.",
-          explanation: "Do có 'the last time', việc sử dụng 'that' được ưu tiên. Đại từ quan hệ này có thể được ẩn đi trong câu này.",
-          type: 'multiple-choice',
-        },
-        {
-          id: 10,
-          question: "He talked about the books and the authors .......... interested him.",
-          options: [
-            { id: 'A', text: 'who' },
-            { id: 'B', text: 'that' },
-            { id: 'C', text: 'which' },
-            { id: 'D', text: 'whom' },
-          ],
-          correctAnswerId: 'B',
-          hint: "Khi danh từ tiền tố bao gồm cả người và vật, ta dùng 'that'.",
-          explanation: "Danh từ tiền tố là 'the books' (vật) và 'the authors' (người). Đại từ quan hệ duy nhất có thể dùng trong trường hợp này là 'that'.",
-          type: 'multiple-choice',
-        },
-        {
-          id: 11,
-          question: "Bondi is the beautiful beach .......... I used to sunbathe.",
-          options: [
-              { id: 'A', text: 'when' },
-              { id: 'B', text: 'where' },
-              { id: 'C', text: 'which' },
-              { id: 'D', text: 'why' },
-          ],
-          correctAnswerId: 'B',
-          hint: "Dùng trạng từ quan hệ 'where' để chỉ nơi chốn.",
-          explanation: "'where' được sử dụng để chỉ nơi chốn ('the beautiful beach'). 'where' = 'at/on which'.",
-          type: 'multiple-choice',
-        },
-        {
-          id: 12,
-          question: "Dec 26th, 05 was the day .......... the terrible tsunami happened.",
-          options: [
-              { id: 'A', text: 'when' },
-              { id: 'B', text: 'where' },
-              { id: 'C', text: 'which' },
-              { id: 'D', text: 'why' },
-          ],
-          correctAnswerId: 'A',
-          hint: "Dùng trạng từ quan hệ 'when' để chỉ thời gian.",
-          explanation: "'when' được sử dụng để chỉ thời gian ('the day').",
-          type: 'multiple-choice',
-        },
-        {
-          id: 13,
-          question: "The woman .......... lives next my door is a doctor.",
-          options: [
-              { id: 'A', text: 'who' },
-              { id: 'B', text: 'whom' },
-              { id: 'C', text: 'which' },
-              { id: 'D', text: 'whose' },
-          ],
-          correctAnswerId: 'A',
-          hint: "Dùng 'who' làm đại từ quan hệ chỉ người, đóng vai trò chủ ngữ.",
-          explanation: "Đại từ quan hệ thay thế cho 'The woman' và làm chủ ngữ cho động từ 'lives'. Do đó, 'who' là đáp án đúng.",
-          type: 'multiple-choice',
-        },
-        {
-          id: 14,
-          question: "The boy .......... Mary likes is my son.",
-          options: [
-              { id: 'A', text: 'who' },
-              { id: 'B', text: 'whom' },
-              { id: 'C', text: 'which' },
-              { id: 'D', text: 'whose' },
-          ],
-          correctAnswerId: 'B',
-          hint: "Dùng 'whom' làm đại từ quan hệ chỉ người, đóng vai trò tân ngữ.",
-          explanation: "Đại từ quan hệ thay thế cho 'The boy' và làm tân ngữ cho động từ 'likes' (Mary likes 'him'). Do đó, 'whom' là đáp án đúng. Trong văn nói, 'who' hoặc bỏ đại từ quan hệ cũng có thể được chấp nhận.",
-          type: 'multiple-choice',
-        },
-        {
-          id: 15,
-          question: "The boy .......... eyes are brown is my son.",
-          options: [
-              { id: 'A', text: 'who' },
-              { id: 'B', text: 'whom' },
-              { id: 'C', text: 'which' },
-              { id: 'D', text: 'whose' },
-          ],
-          correctAnswerId: 'D',
-          hint: "Dùng 'whose' để chỉ sự sở hữu.",
-          explanation: "'whose' được sử dụng để chỉ sự sở hữu. 'whose eyes' có nghĩa là 'đôi mắt của cậu bé đó'.",
-          type: 'multiple-choice',
-        },
-        {
-          id: 16,
-          question: "The table .......... legs are broken should be repaired.",
-          options: [
-              { id: 'A', text: 'who' },
-              { id: 'B', text: 'whom' },
-              { id: 'C', text: 'which' },
-              { id: 'D', text: 'whose' },
-          ],
-          correctAnswerId: 'D',
-          hint: "Dùng 'whose' để chỉ sự sở hữu cho cả người và vật.",
-          explanation: "'whose' được sử dụng để chỉ sự sở hữu. 'whose legs' có nghĩa là 'những cái chân của cái bàn đó'.",
-          type: 'multiple-choice',
-        },
-        {
-          id: 17,
-          question: "The town .......... we are living is noisy and crowded.",
-          options: [
-              { id: 'A', text: 'where' },
-              { id: 'B', text: 'in where' },
-              { id: 'C', text: 'which' },
-              { id: 'D', text: 'at which' },
-          ],
-          correctAnswerId: 'A',
-          hint: "Dùng 'where' (= in which) để chỉ nơi chốn.",
-          explanation: "'where' thay thế cho 'in the town'. Ta sống 'trong' thị trấn ('live in the town'), nên 'where' là trạng từ quan hệ phù hợp. Không dùng giới từ trước 'where'.",
-          type: 'multiple-choice',
-        },
-        {
-          id: 18,
-          question: "The year .......... we came to live here was 1997.",
-          options: [
-              { id: 'A', text: 'when' },
-              { id: 'B', text: 'which' },
-              { id: 'C', text: 'that' },
-              { id: 'D', text: 'in the time' },
-          ],
-          correctAnswerId: 'A',
-          hint: "Dùng 'when' (= in which) để chỉ thời gian.",
-          explanation: "'when' thay thế cho 'in the year'. Chúng tôi đến sống 'vào' năm đó ('came to live in that year'), nên 'when' là trạng từ quan hệ phù hợp.",
-          type: 'multiple-choice',
-        },
-        {
-          id: 19,
-          question: "The worker .......... house is next to mine died this morning.",
-          options: [
-              { id: 'A', text: 'whose' },
-              { id: 'B', text: 'whom' },
-              { id: 'C', text: 'which' },
-              { id: 'D', text: 'whose' },
-          ],
-          correctAnswerId: 'D', // A and D are identical, using D as per image
-          hint: "Dùng 'whose' để chỉ sự sở hữu.",
-          explanation: "'whose' được sử dụng để chỉ sự sở hữu. 'whose house' có nghĩa là 'ngôi nhà của người công nhân đó'.",
-          type: 'multiple-choice',
-        },
-        {
-          id: 20,
-          question: "The lady .......... son went on a picnic with us last weekend is a teacher at our school.",
-          options: [
-              { id: 'A', text: 'who' },
-              { id: 'B', text: 'whom' },
-              { id: 'C', text: 'whose' },
-              { id: 'D', text: 'that' },
-          ],
-          correctAnswerId: 'C',
-          hint: "Dùng 'whose' để chỉ sự sở hữu.",
-          explanation: "'whose' được sử dụng để chỉ sự sở hữu. 'whose son' có nghĩa là 'người con trai của người phụ nữ đó'.",
-          type: 'multiple-choice',
-        },
-        {
-          id: 21,
-          question: "Take .......... measures you consider best.",
-          options: [
-            { id: 'A', text: 'whatever' },
-            { id: 'B', text: 'however' },
-            { id: 'C', text: 'whenever' },
-            { id: 'D', text: 'wherever' },
-          ],
-          correctAnswerId: 'A',
-          hint: "'whatever' có nghĩa là 'bất cứ cái gì'.",
-          explanation: "Câu này có nghĩa 'Hãy thực hiện bất cứ biện pháp nào bạn cho là tốt nhất'. 'whatever' (bất cứ cái gì/thứ gì) là phù hợp nhất trong ngữ cảnh này.",
-          type: 'multiple-choice',
-        },
-        // Page 2
-        {
-          id: 22,
-          question: ".......... difficulties you may encounter, I'm sure you'll succeed.",
-          options: [
-              { id: 'A', text: 'how' },
-              { id: 'B', text: 'whatever' },
-              { id: 'C', text: 'however' },
-              { id: 'D', text: 'how great' },
-          ],
-          correctAnswerId: 'B',
-          hint: "'Whatever' + Noun có nghĩa là 'Dù bất cứ ... nào'. 'However' + Adj/Adv có nghĩa là 'Dù ... đến đâu'.",
-          explanation: "'difficulties' là danh từ, do đó ta cần dùng 'whatever'. Cụm 'Whatever difficulties' có nghĩa là 'Dù gặp bất cứ khó khăn nào'. 'However' sẽ đi với tính từ, ví dụ 'However difficult it is...'",
-          type: 'multiple-choice',
-        },
-        {
-          id: 23,
-          question: "He is the only friend .......... I like.",
-          options: [
-              { id: 'A', text: 'who' },
-              { id: 'B', text: 'whom' },
-              { id: 'C', text: 'that' },
-              { id: 'D', text: 'all' },
-          ],
-          correctAnswerId: 'C',
-          hint: "Sau các từ như 'the only', 'the first', so sánh nhất, ta thường dùng 'that'.",
-          explanation: "Vì có cụm 'the only friend', đại từ quan hệ 'that' được ưu tiên sử dụng. Đại từ này cũng có thể được ẩn đi: 'He is the only friend I like'.",
-          type: 'multiple-choice',
-        },
-        {
-          id: 24,
-          question: "I didn't get the job .......... which I applied.",
-          options: [
-              { id: 'A', text: 'in' },
-              { id: 'B', text: 'on' },
-              { id: 'C', text: 'at' },
-              { id: 'D', text: 'for' },
-          ],
-          correctAnswerId: 'D',
-          hint: "Động từ 'apply' đi với giới từ 'for' khi nói về việc ứng tuyển cho một vị trí/công việc.",
-          explanation: "Cụm từ cố định là 'apply for a job'. Do đó, giới từ đúng là 'for'. Mệnh đề đầy đủ là 'I applied for which (job)'.",
-          type: 'multiple-choice',
-        },
-        {
-          id: 25,
-          question: "The man .......... whom she is married has been married twice before.",
-          options: [
-              { id: 'A', text: 'in' },
-              { id: 'B', text: 'on' },
-              { id: 'C', text: 'at' },
-              { id: 'D', text: 'to' },
-          ],
-          correctAnswerId: 'D',
-          hint: "Cấu trúc 'to be married to somebody' (kết hôn với ai đó).",
-          explanation: "Ta dùng giới từ 'to' sau 'married'. 'She is married to whom'. Do đó 'to' là đáp án đúng.",
-          type: 'multiple-choice',
-        },
-        {
-          id: 26,
-          question: "I wasn't interested in the things .......... which they were talking.",
-          options: [
-              { id: 'A', text: 'in' },
-              { id: 'B', text: 'on' },
-              { id: 'C', text: 'at' },
-              { id: 'D', text: 'about' },
-          ],
-          correctAnswerId: 'D',
-          hint: "Động từ 'talk' đi với giới từ 'about' khi nói về một chủ đề nào đó.",
-          explanation: "Cụm từ cố định là 'talk about something'. Họ đang nói 'về' những thứ đó. 'They were talking about which (things)'.",
-          type: 'multiple-choice',
-        },
-        {
-          id: 27,
-          question: "The bed .......... which I slept was too soft.",
-          options: [
-              { id: 'A', text: 'in' },
-              { id: 'B', text: 'on' },
-              { id: 'C', text: 'at' },
-              { id: 'D', text: 'for' },
-          ],
-          correctAnswerId: 'A',
-          hint: "Ta thường ngủ 'trong' giường ('sleep in a bed').",
-          explanation: "Giới từ phù hợp là 'in'. 'I slept in which (bed)'.",
-          type: 'multiple-choice',
-        },
-        {
-          id: 28,
-          question: "The party .......... which we went wasn't very enjoyable.",
-          options: [
-              { id: 'A', text: 'in' },
-              { id: 'B', text: 'on' },
-              { id: 'C', text: 'at' },
-              { id: 'D', text: 'to' },
-          ],
-          correctAnswerId: 'D',
-          hint: "Động từ 'go' đi với giới từ 'to' khi chỉ sự di chuyển đến một nơi nào đó.",
-          explanation: "Cụm từ là 'go to a party'. 'We went to which (party)'.",
-          type: 'multiple-choice',
-        },
-        {
-          id: 29,
-          question: "The flight .......... which we wanted to travel was fully booked.",
-          options: [
-              { id: 'A', text: 'in' },
-              { id: 'B', text: 'on' },
-              { id: 'C', text: 'at' },
-              { id: 'D', text: 'for' },
-          ],
-          correctAnswerId: 'B',
-          hint: "Ta sử dụng giới từ 'on' khi nói về việc đi trên một phương tiện công cộng lớn như máy bay, tàu hỏa, xe buýt.",
-          explanation: "Cụm từ là 'travel on a flight'. 'We wanted to travel on which (flight)'.",
-          type: 'multiple-choice',
-        },
-        {
-          id: 30,
-          question: "She is the most beautiful girl .......... ever lived.",
-          options: [
-              { id: 'A', text: 'which' },
-              { id: 'B', text: 'whom' },
-              { id: 'C', text: 'whose' },
-              { id: 'D', text: 'that' },
-          ],
-          correctAnswerId: 'D',
-          hint: "Sau so sánh nhất ('the most beautiful'), ta thường dùng đại từ quan hệ 'that'.",
-          explanation: "Do có cấu trúc so sánh nhất 'the most beautiful girl', việc sử dụng 'that' được ưu tiên. 'who' cũng có thể chấp nhận được nhưng 'that' là lựa chọn tốt nhất.",
-          type: 'multiple-choice',
-        },
-        {
-          id: 31,
-          question: "The decision was postponed, .......... was exactly what he wanted.",
-          options: [
-              { id: 'A', text: 'who' },
-              { id: 'B', text: 'whom' },
-              { id: 'C', text: 'which' },
-              { id: 'D', text: 'that' },
-          ],
-          correctAnswerId: 'C',
-          hint: "Dùng 'which' để thay thế cho cả một mệnh đề đứng trước nó. Mệnh đề này phải được ngăn cách bằng dấu phẩy.",
-          explanation: "'which' ở đây không thay thế cho một danh từ cụ thể nào, mà thay thế cho cả sự việc 'The decision was postponed' (Việc quyết định bị hoãn lại). Điều này ('which') chính xác là những gì anh ta muốn.",
-          type: 'multiple-choice',
-        },
-        {
-          id: 32,
-          question: "All the people .......... have gone into the room are still young.",
-          options: [
-              { id: 'A', text: 'which' },
-              { id: 'B', text: 'whom' },
-              { id: 'C', text: 'whose' },
-              { id: 'D', text: 'that' },
-          ],
-          correctAnswerId: 'D',
-          hint: "Sau các đại từ bất định như 'all', 'some', 'any', 'none', ta thường dùng 'that'.",
-          explanation: "Do có từ 'All' đứng trước danh từ chỉ người 'the people', đại từ quan hệ 'that' được ưu tiên sử dụng. 'who' cũng có thể chấp nhận được nhưng 'that' là lựa chọn phổ biến hơn.",
-          type: 'multiple-choice',
-        },
-        {
-          id: 33,
-          question: "Jack has three brothers, all of .......... are married.",
-          options: [
-              { id: 'A', text: 'who' },
-              { id: 'B', text: 'whom' },
-              { id: 'C', text: 'which' },
-              { id: 'D', text: 'that' },
-          ],
-          correctAnswerId: 'B',
-          hint: "Cấu trúc: 'all/most/none/some of + whom' (cho người) hoặc 'of + which' (cho vật).",
-          explanation: "Đây là mệnh đề quan hệ không xác định, bổ nghĩa cho 'three brothers'. Sau cấu trúc lượng từ 'all of', ta phải dùng 'whom' cho người hoặc 'which' cho vật. Không dùng 'that' sau giới từ.",
-          type: 'multiple-choice',
-        },
-        {
-          id: 34,
-          question: "They gave us a lot of information, most of .......... was useless.",
-          options: [
-              { id: 'A', text: 'who' },
-              { id: 'B', text: 'whom' },
-              { id: 'C', text: 'which' },
-              { id: 'D', text: 'that' },
-          ],
-          correctAnswerId: 'C',
-          hint: "Cấu trúc: 'most of + whom' (cho người) hoặc 'most of + which' (cho vật).",
-          explanation: "Mệnh đề quan hệ không xác định, bổ nghĩa cho 'a lot of information'. Vì 'information' là vật, ta dùng 'which' sau 'most of'.",
-          type: 'multiple-choice',
-        },
-        {
-          id: 35,
-          question: "There were a lot of people at the party, only a few of .......... I had met before.",
-          options: [
-              { id: 'A', text: 'who' },
-              { id: 'B', text: 'whom' },
-              { id: 'C', text: 'them' },
-              { id: 'D', text: 'that' },
-          ],
-          correctAnswerId: 'B',
-          hint: "Cấu trúc: 'a few of + whom' (cho người) hoặc 'a few of + which' (cho vật).",
-          explanation: "Để nối hai mệnh đề, ta cần một đại từ quan hệ. 'them' sẽ tạo ra lỗi câu phẩy (comma splice). Đại từ quan hệ ở đây làm tân ngữ và theo sau lượng từ 'a few of', nên ta dùng 'whom' để chỉ người ('people').",
-          type: 'multiple-choice',
-        },
-        {
-          id: 36,
-          question: "I have sent him two letters, neither of .......... has arrived.",
-          options: [
-              { id: 'A', text: 'who' },
-              { id: 'B', text: 'them' },
-              { id: 'C', text: 'which' },
-              { id: 'D', text: 'that' },
-          ],
-          correctAnswerId: 'C',
-          hint: "Cấu trúc: 'neither of + whom' (cho người) hoặc 'neither of + which' (cho vật).",
-          explanation: "Để nối hai mệnh đề, ta cần một đại từ quan hệ. 'letters' là vật, nên ta dùng 'which' sau 'neither of'.",
-          type: 'multiple-choice',
-        },
-        {
-          id: 37,
-          question: "John won $600, half of .......... he gave to his parents.",
-          options: [
-              { id: 'A', text: 'whom' },
-              { id: 'B', text: 'which' },
-              { id: 'C', text: 'that' },
-              { id: 'D', text: 'it' },
-          ],
-          correctAnswerId: 'B',
-          hint: "Cấu trúc: 'half of + whom' (cho người) hoặc 'half of + which' (cho vật).",
-          explanation: "Đại từ quan hệ thay thế cho '$600' (vật). Do đó ta dùng 'which' sau 'half of'.",
-          type: 'multiple-choice',
-        },
-        {
-          id: 38,
-          question: "Ten people applied for the job, none of .......... were suitable.",
-          options: [
-              { id: 'A', text: 'who' },
-              { id: 'B', text: 'whom' },
-              { id: 'C', text: 'them' },
-              { id: 'D', text: 'that' },
-          ],
-          correctAnswerId: 'B',
-          hint: "Cấu trúc: 'none of + whom' (cho người) hoặc 'none of + which' (cho vật).",
-          explanation: "Để nối hai mệnh đề, ta cần một đại từ quan hệ. 'people' là người, nên ta dùng 'whom' sau 'none of'.",
-          type: 'multiple-choice',
-        },
-        {
-          id: 39,
-          question: "Jill isn't on the phone, .......... makes it difficult to contact her.",
-          options: [
-              { id: 'A', text: 'which' },
-              { id: 'B', text: 'that' },
-              { id: 'C', text: 'who' },
-              { id: 'D', text: 'it' },
-          ],
-          correctAnswerId: 'A',
-          hint: "Dùng 'which' sau dấu phẩy để thay thế cho cả một mệnh đề đứng trước nó.",
-          explanation: "'which' ở đây thay thế cho cả sự việc 'Jill isn't on the phone'. Việc này ('which') gây khó khăn trong việc liên lạc với cô ấy.",
-          type: 'multiple-choice',
-        },
-        {
-          id: 40,
-          question: "Bob is the kind of person to .......... one can talk about anything.",
-          options: [
-              { id: 'A', text: 'who' },
-              { id: 'B', text: 'whom' },
-              { id: 'C', 'text': 'that' },
-              { id: 'D', text: 'him' },
-          ],
-          correctAnswerId: 'B',
-          hint: "Sau giới từ (to), ta dùng 'whom' cho người.",
-          explanation: "Đại từ quan hệ ở đây làm tân ngữ cho giới từ 'to' ('talk to someone'). Do đó, 'whom' là lựa chọn chính xác.",
-          type: 'multiple-choice',
-        },
-        {
-          id: 41,
-          question: "He is a person .......... friends trust him.",
-          options: [
-              { id: 'A', text: 'who' },
-              { id: 'B', text: 'whose' },
-              { id: 'C', text: 'his' },
-              { id: 'D', text: 'that' },
-          ],
-          correctAnswerId: 'B',
-          hint: "Dùng 'whose' để chỉ sự sở hữu. 'Whose' + Noun.",
-          explanation: "Chỗ trống cần một từ chỉ sở hữu cho 'friends' (bạn bè CỦA anh ấy). 'whose' là đại từ quan hệ chỉ sở hữu phù hợp.",
-          type: 'multiple-choice',
-        },
-        {
-          id: 42,
-          question: "Your career should focus on a field in .......... you are genuinely interested.",
-          options: [
-              { id: 'A', text: 'which' },
-              { id: 'B', text: 'what' },
-              { id: 'C', text: 'that' },
-              { id: 'D', text: 'why' },
-          ],
-          correctAnswerId: 'A',
-          hint: "Cấu trúc 'interested in something'. Giới từ 'in' đã có sẵn, nên ta cần một đại từ quan hệ chỉ vật.",
-          explanation: "Mệnh đề quan hệ bổ nghĩa cho 'a field'. Cấu trúc là 'be interested in a field'. Đại từ quan hệ thay thế cho 'field' (vật) và là tân ngữ của giới từ 'in', do đó ta dùng 'which'. Cụm 'in which' có thể được thay bằng 'where'.",
-          type: 'multiple-choice',
-        },
-        {
-          id: 43,
-          question: "People .......... outlook on life is optimistic are usually happy people.",
-          options: [
-              { id: 'A', text: 'whose' },
-              { id: 'B', text: 'whom' },
-              { id: 'C', text: 'that' },
-              { id: 'D', text: 'which' },
-          ],
-          correctAnswerId: 'A',
-          hint: "Dùng 'whose' để chỉ sự sở hữu.",
-          explanation: "'whose' được dùng để chỉ sự sở hữu. 'whose outlook on life' có nghĩa là 'quan điểm sống của những người đó'.",
-          type: 'multiple-choice',
-        },
-        {
-          id: 44,
-          question: "Anna's marriage has been arranged by her family. She is marrying a man .......... .",
-          options: [
-              { id: 'A', text: 'that she hardly knows him' },
-              { id: 'B', text: 'whom she hardly knows him' },
-              { id: 'C', text: 'she hardly knows' },
-              { id: 'D', text: 'she hardly knows him' },
-          ],
-          correctAnswerId: 'C',
-          hint: "Trong mệnh đề quan hệ, đại từ quan hệ đã thay thế cho tân ngữ, không lặp lại tân ngữ đó nữa.",
-          explanation: "Mệnh đề quan hệ bổ nghĩa cho 'a man'. 'She hardly knows (the man)'. Đại từ quan hệ (whom/that/who, có thể ẩn đi) đã thay thế cho 'the man', vì vậy không được lặp lại 'him' ở cuối mệnh đề.",
-          type: 'multiple-choice',
-        },
-        {
-          id: 45,
-          question: "They said they didn't have any money, ........... was a pity.",
-          options: [
-              { id: 'A', text: 'which' },
-              { id: 'B', text: 'that' },
-              { id: 'C', text: 'this' },
-              { id: 'D', text: 'it' },
-          ],
-          correctAnswerId: 'A',
-          hint: "Dùng 'which' sau dấu phẩy để thay thế cho cả một mệnh đề đứng trước.",
-          explanation: "'which' ở đây thay thế cho cả sự việc 'they didn't have any money'. Việc này ('which') là một điều đáng tiếc.",
-          type: 'multiple-choice',
-        },
-        // Page 3
-        {
-          id: 46,
-          question: "I haven't got a passport, ........... means I can't leave my country.",
-          options: [
-              { id: 'A', text: 'it' },
-              { id: 'B', text: 'that' },
-              { id: 'C', text: 'this' },
-              { id: 'D', text: 'which' },
-          ],
-          correctAnswerId: 'D',
-          hint: "Dùng 'which' sau dấu phẩy để thay thế cho cả một mệnh đề đứng trước.",
-          explanation: "'which' ở đây thay thế cho cả sự việc 'I haven't got a passport'. Việc này ('which') có nghĩa là tôi không thể rời khỏi đất nước.",
-          type: 'multiple-choice',
-        },
-        {
-          id: 47,
-          question: "The part of town where I live is very noisy at night, ........... makes it difficult to sleep.",
-          options: [
-              { id: 'A', text: 'which' },
-              { id: 'B', text: 'where' },
-              { id: 'C', text: 'that' },
-              { id: 'D', text: 'this' },
-          ],
-          correctAnswerId: 'A',
-          hint: "Dùng 'which' sau dấu phẩy để thay thế cho cả một mệnh đề đứng trước.",
-          explanation: "'which' ở đây thay thế cho cả sự việc 'The part of town where I live is very noisy at night'. Việc này ('which') khiến cho khó ngủ.",
-          type: 'multiple-choice',
-        },
-        {
-          id: 48,
-          question: "That is the place .......... the accident occurred.",
-          options: [
-              { id: 'A', text: 'where' },
-              { id: 'B', text: 'which' },
-              { id: 'C', text: 'on which' },
-              { id: 'D', text: 'that' },
-          ],
-          correctAnswerId: 'A',
-          hint: "Dùng 'where' để chỉ nơi chốn.",
-          explanation: "'where' thay thế cho một cụm từ chỉ nơi chốn ('at/in the place'). 'where' = 'at which'.",
-          type: 'multiple-choice',
-        },
-        {
-          id: 49,
-          question: "The boys .......... tennis over there are my new neighbor.",
-          options: [
-              { id: 'A', text: 'who plays' },
-              { id: 'B', text: 'playing' },
-              { id: 'C', text: 'that playing' },
-              { id: 'D', text: 'are playing' },
-          ],
-          correctAnswerId: 'B',
-          hint: "Mệnh đề quan hệ có thể được rút gọn bằng V-ing (chủ động) hoặc V3/ed (bị động).",
-          explanation: "Câu đầy đủ là 'The boys who are playing tennis...'. Mệnh đề quan hệ chủ động ('who are playing') có thể được rút gọn thành V-ing ('playing').",
-          type: 'multiple-choice',
-        },
-        {
-          id: 50,
-          question: "He read the Old Man and The Sea, a novel ............. by Ernest Hemingway.",
-          options: [
-              { id: 'A', text: 'writing' },
-              { id: 'B', text: 'which written' },
-              { id: 'C', text: 'written' },
-              { id: 'D', text: 'that wrote' },
-          ],
-          correctAnswerId: 'C',
-          hint: "Mệnh đề quan hệ có thể được rút gọn bằng V3/ed (bị động).",
-          explanation: "Câu đầy đủ là 'a novel which was written by...'. Mệnh đề quan hệ bị động ('which was written') có thể được rút gọn thành V3/ed ('written').",
-          type: 'multiple-choice',
-        },
-        {
-          id: 51,
-          question: "No one present noticed anything strange. -> Rewrite the sentence.",
-          options: [
-            { id: 'A', text: "The people who were there didn't notice anything strange." },
-            { id: 'B', text: "The people who were there didn't notice anything usual." },
-            { id: 'C', text: "The people were there didn't notice anything strange." },
-            { id: 'D', text: "The people who were there didn't notice something strange." },
-          ],
-          correctAnswerId: 'A',
-          hint: "'No one present' có nghĩa là 'không một ai có mặt'.",
-          explanation: "'No one present' có thể được diễn giải thành 'The people who were present/there... not...'. Câu A diễn đạt chính xác ý nghĩa của câu gốc.",
-          type: 'multiple-choice',
-        },
-        {
-          id: 52,
-          question: "Jane refused to attend his birthday party, which made him feel sad. -> Rewrite the sentence.",
-          options: [
-            { id: 'A', text: "Jane's refusal to attend his birthday party made him feel sad." },
-            { id: 'B', text: "He felt sad not to be able to attend his birthday party." },
-            { id: 'C', text: "Jane made him sad despite her refusal to attend his birthday party." },
-            { id: 'D', text: "Jane refused to attend his birthday party because it made him feel sad." },
-          ],
-          correctAnswerId: 'A',
-          hint: "Mệnh đề 'which' ở đây thay thế cho cả vế trước. Có thể biến đổi vế trước thành một cụm danh từ.",
-          explanation: "Sự việc 'Jane refused to attend his birthday party' có thể được danh từ hóa thành 'Jane's refusal to attend his birthday party'. Cụm danh từ này là chủ ngữ gây ra kết quả 'made him feel sad'.",
-          type: 'multiple-choice',
-        },
-        {
-          id: 53,
-          question: "The plants may develop differently. They grow on that island. -> Combine the sentences.",
-          options: [
-            { id: 'A', text: "The plants which grows on that island may develop differently." },
-            { id: 'B', text: "The plants which grow on that island may develop differently." },
-            { id: 'C', text: "The plants grow on that island may develop differently." },
-            { id: 'D', text: "The plants which grow that island may develop differently." },
-          ],
-          correctAnswerId: 'B',
-          hint: "Kết hợp hai câu dùng mệnh đề quan hệ. Chú ý sự hòa hợp giữa chủ ngữ và động từ.",
-          explanation: "Dùng 'which' để thay thế cho 'The plants'. Chủ ngữ 'plants' là số nhiều nên động từ theo sau phải ở dạng nguyên thể 'grow', không thêm 's'.",
-          type: 'multiple-choice',
-        },
-        {
-          id: 54,
-          question: "John Smith is a farmer. I bought his land. -> Combine the sentences.",
-          options: [
-            { id: 'A', text: "John Smith, whose land I bought, is a farmer." },
-            { id: 'B', text: "John Smith, who is a farmer, whose land I bought." },
-            { id: 'C', text: "John Smith, whom I bought his land, is a farmer." },
-            { id: 'D', text: "John Smith, a farmer, bought his land." },
-          ],
-          correctAnswerId: 'A',
-          hint: "Dùng 'whose' để chỉ sự sở hữu ('his land' -> 'whose land').",
-          explanation: "Để kết hợp hai câu, ta dùng mệnh đề quan hệ không xác định (có dấu phẩy) để bổ nghĩa cho 'John Smith'. 'his land' thể hiện sự sở hữu, nên ta dùng 'whose land'.",
-          type: 'multiple-choice',
-        },
-        {
-          id: 55,
-          question: "The first man who was interviewed was entirely unsuitable. -> Rewrite using a reduced relative clause.",
-          options: [
-            { id: 'A', text: "The first man interviewing was entirely unsuitable." },
-            { id: 'B', text: "The first man to interview was entirely unsuitable." },
-            { id: 'C', text: "The first man was interviewed was entirely unsuitable." },
-            { id: 'D', text: "The first man to be interviewed was entirely unsuitable." },
-          ],
-          correctAnswerId: 'D',
-          hint: "Khi mệnh đề quan hệ đứng sau các từ chỉ thứ tự (the first, the second...) hoặc so sánh nhất, ta có thể rút gọn bằng 'to V-inf' (chủ động) hoặc 'to be V3/ed' (bị động).",
-          explanation: "Mệnh đề quan hệ 'who was interviewed' ở dạng bị động. Vì nó đứng sau 'The first man', ta rút gọn thành 'to be interviewed'.",
-          type: 'multiple-choice',
-        },
-        {
-          id: 56,
-          question: "Astronomy is the study of planets and stars. It is one of the world's oldest sciences. -> Combine the sentences.",
-          options: [
-              { id: 'A', text: "Astronomy which is the study of planets and stars is one of the world's oldest sciences" },
-              { id: 'B', text: "Astronomy, who is the study of planets and stars, is one of the world's oldest sciences" },
-              { id: 'C', text: "Astronomy, which is the study of planets and stars, is one of the world's oldest sciences" },
-              { id: 'D', text: "Astronomy, the study of planets and stars, is one of the world's oldest sciences" },
-          ],
-          correctAnswerId: 'C',
-          hint: "Sử dụng mệnh đề quan hệ không xác định (có dấu phẩy) để cung cấp thêm thông tin cho một danh từ riêng.",
-          explanation: "'Astronomy' là danh từ riêng, đã xác định, nên mệnh đề quan hệ bổ nghĩa cho nó phải là mệnh đề không xác định, tức là phải có dấu phẩy. 'who' dùng cho người, không dùng cho 'Astronomy'. Đáp án D sử dụng cụm đồng vị ngữ, cũng là một cách đúng, nhưng đáp án C sử dụng mệnh đề quan hệ theo yêu cầu.",
-          type: 'multiple-choice',
-        },
-        {
-          id: 57,
-          question: "Our solar system is in a galaxy. It is called the Milky Way. -> Combine the sentences.",
-          options: [
-              { id: 'A', text: "Our solar system is in a galaxy where is called the Milky Way." },
-              { id: 'B', text: "Our solar system is in a galaxy called the Milky Way." },
-              { id: 'C', text: "Our solar system is in a galaxy, that is called the Milky Way." },
-              { id: 'D', text: "Our solar system is in a galaxy calling the Milky Way." },
-          ],
-          correctAnswerId: 'B',
-          hint: "Mệnh đề quan hệ bị động 'which is called' có thể được rút gọn thành V3/ed 'called'.",
-          explanation: "Câu đầy đủ khi kết hợp là 'Our solar system is in a galaxy which is called the Milky Way.' Mệnh đề quan hệ bị động này được rút gọn thành 'called the Milky Way'.",
-          type: 'multiple-choice',
-        },
-        {
-          id: 58,
-          question: "I saw men, women, cats and dogs. They moved round and round. -> Combine the sentences.",
-          options: [
-              { id: 'A', text: "I saw men, women, cats and dogs that moved round and round." },
-              { id: 'B', text: "I saw men, women, cats and dogs which moved round and round." },
-              { id: 'C', text: "I saw men, women, cats and dogs moved round and round." },
-              { id: 'D', text: "I saw men, women, cats and dogs when moved round and round." },
-          ],
-          correctAnswerId: 'A',
-          hint: "Khi danh từ tiền tố bao gồm cả người và vật, ta dùng đại từ quan hệ 'that'.",
-          explanation: "Tiền tố là 'men, women' (người) và 'cats and dogs' (vật). Do đó, đại từ quan hệ phù hợp duy nhất là 'that'.",
-          type: 'multiple-choice',
-        },
-        // Page 4
-        {
-          id: 59,
-          question: "One evening, he and the writer went to a restaurant. They had a wonderful meal in it. -> Combine the sentences.",
-          options: [
-              { id: 'A', text: "One evening, he and the writer went to a restaurant which they had a wonderful meal." },
-              { id: 'B', text: "One evening, he and the writer went to a restaurant where they had a wonderful meal in." },
-              { id: 'C', text: "One evening, he and the writer went to a restaurant where they had a wonderful meal." },
-              { id: 'D', text: "One evening, he and the writer went to a restaurant they had a wonderful meal." },
-          ],
-          correctAnswerId: 'C',
-          hint: "'where' = 'in which'. Khi đã dùng 'where', không lặp lại giới từ 'in'.",
-          explanation: "Câu gốc có 'in it', tức là 'in the restaurant'. Do đó, ta có thể dùng 'where' (thay cho 'in which') để chỉ nơi chốn. 'where' đã bao hàm giới từ 'in' nên không lặp lại nó nữa.",
-          type: 'multiple-choice',
-        },
-        {
-          id: 60,
-          question: "A number of suggestions were made at the meeting, but most of them were not very practical. -> Combine the sentences.",
-          options: [
-              { id: 'A', text: "A number of suggestions were made at the meeting, most of them were not very practical" },
-              { id: 'B', text: "A number of suggestions were made at the meeting, most of which were not very practical" },
-              { id: 'C', text: "A number of suggestions were made at the meeting, but most of which were not very practical" },
-              { id: 'D', text: "Most of the suggestions which were made at the meeting were not very practical." },
-          ],
-          correctAnswerId: 'B',
-          hint: "Dùng 'most of which' để nối hai mệnh đề.",
-          explanation: "Để nối hai mệnh đề bằng mệnh đề quan hệ, ta thay 'them' bằng 'which' (chỉ 'suggestions'). Cấu trúc 'most of which' là phù hợp. Không dùng liên từ 'but' khi đã dùng mệnh đề quan hệ kiểu này.",
-          type: 'multiple-choice',
-        },
-        {
-          id: 61,
-          question: ".......... in 1937, the Golden Gate Bridge spans the channel at the entrance to San Francisco Bay.",
-          options: [
-              { id: 'A', text: 'Completed' },
-              { id: 'B', text: 'Having completed' },
-              { id: 'C', text: 'Completing' },
-              { id: 'D', text: 'To be completed' },
-          ],
-          correctAnswerId: 'A',
-          hint: "Rút gọn mệnh đề quan hệ bị động.",
-          explanation: "Câu đầy đủ là 'The Golden Gate Bridge, which was completed in 1937, spans...'. Mệnh đề quan hệ bị động được rút gọn thành V3/ed ('Completed').",
-          type: 'multiple-choice',
-        },
-        {
-          id: 62,
-          question: "After seeing the movie Centennial, .......... .",
-          options: [
-              { id: 'A', text: 'the book made many people want to read it' },
-              { id: 'B', text: 'many people want to read the book' },
-              { id: 'C', text: 'the reading of the book interested many people' },
-              { id: 'D', text: 'the book was read by many people' },
-          ],
-          correctAnswerId: 'B',
-          hint: "Chủ ngữ của mệnh đề trạng ngữ rút gọn ('seeing') phải giống với chủ ngữ của mệnh đề chính.",
-          explanation: "Người 'thấy' bộ phim ('seeing the movie') phải là 'nhiều người' ('many people'). Do đó, mệnh đề chính phải bắt đầu bằng 'many people'. Các đáp án khác có chủ ngữ không tương thích (dangling modifier).",
-          type: 'multiple-choice',
-        },
-        {
-          id: 63,
-          question: ".......... of the shop, my friend came in.",
-          options: [
-              { id: 'A', text: 'Coming out' },
-              { id: 'B', text: 'On coming out' },
-              { id: 'C', text: 'When coming out' },
-              { id: 'D', text: 'As I came out' },
-          ],
-          correctAnswerId: 'D',
-          hint: "Rút gọn mệnh đề trạng ngữ chỉ thời gian. Khi hai hành động xảy ra nối tiếp nhau, có thể dùng 'As S + V...'.",
-          explanation: "Câu đầy đủ là 'As I was coming out of the shop, my friend came in.' (Khi tôi đang đi ra khỏi cửa hàng, bạn tôi đi vào). Các cách rút gọn khác không tự nhiên hoặc không đúng ngữ pháp trong trường hợp này.",
-          type: 'multiple-choice',
-        },
-        {
-          id: 64,
-          question: ".......... two hours over lunch, they left the restaurant.",
-          options: [
-              { id: 'A', text: 'Spending' },
-              { id: 'B', text: 'Having spent' },
-              { id: 'C', text: 'After spend' },
-              { id: 'D', text: 'Spent' },
-          ],
-          correctAnswerId: 'B',
-          hint: "Rút gọn mệnh đề trạng ngữ chỉ thời gian, khi hành động trong mệnh đề rút gọn xảy ra trước hành động trong mệnh đề chính, dùng 'Having + V3/ed'.",
-          explanation: "Hành động 'trải qua hai giờ ăn trưa' xảy ra trước hành động 'rời nhà hàng'. Do đó ta dùng dạng phân từ hoàn thành 'Having spent'.",
-          type: 'multiple-choice',
-        },
-        {
-          id: 65,
-          question: "I notice the lorry .......... down the hill.",
-          options: [
-              { id: 'A', text: 'having come' },
-              { id: 'B', text: 'coming' },
-              { id: 'C', text: 'to come' },
-              { id: 'D', text: 'came' },
-          ],
-          correctAnswerId: 'B',
-          hint: "Sau các động từ tri giác như 'notice', 'see', 'hear', ta dùng V-ing để chỉ hành động đang diễn ra.",
-          explanation: "Cấu trúc 'notice somebody/something + V-ing' được dùng để diễn tả việc chứng kiến một hành động đang xảy ra. Tôi nhận thấy chiếc xe tải đang đi xuống đồi.",
-          type: 'multiple-choice',
-        },
-        {
-          id: 66,
-          question: ".........., I decided to stop trading with them.",
-          options: [
-              { id: 'A', text: 'Despite of the fact that they were the biggest dealer' },
-              { id: 'B', text: 'Though being the biggest dealer' },
-              { id: 'C', text: 'Being the biggest dealer' },
-              { id: 'D', text: 'Even though they were the biggest dealers' },
-          ],
-          correctAnswerId: 'C',
-          hint: "Rút gọn mệnh đề trạng ngữ chỉ nguyên nhân - kết quả hoặc lý do.",
-          explanation: "Câu này có thể hiểu là 'Because they were the biggest dealer...'. Tuy nhiên, ý nghĩa logic của câu lại là sự nhượng bộ. Nhưng trong các lựa chọn, C là cách rút gọn đúng ngữ pháp nhất, dù có thể ý nghĩa không hoàn toàn chặt chẽ. 'Being...' rút gọn từ mệnh đề 'As/Because they were...'. Các lựa chọn khác sai ngữ pháp ('despite of') hoặc không phù hợp.",
-          type: 'multiple-choice',
-        },
-        {
-          id: 67,
-          question: "She told a very funny story, .......... everyone to burst into a laugh.",
-          options: [
-              { id: 'A', text: 'allowing' },
-              { id: 'B', text: 'making' },
-              { id: 'C', text: 'taking' },
-              { id: 'D', text: 'causing' },
-          ],
-          correctAnswerId: 'D',
-          hint: "Dùng V-ing để chỉ kết quả của hành động ở mệnh đề chính.",
-          explanation: "Hành động 'kể chuyện' (told a story) đã 'gây ra' (causing) kết quả là mọi người bật cười. Đây là một dạng rút gọn mệnh đề kết quả.",
-          type: 'multiple-choice',
-        },
-        {
-          id: 68,
-          question: "I wasn't properly dressed for the party and felt .......... about my appearance.",
-          options: [
-              { id: 'A', text: 'embarrass' },
-              { id: 'B', text: 'embarrassment' },
-              { id: 'C', text: 'embarrassing' },
-              { id: 'D', text: 'embarrassed' },
-          ],
-          correctAnswerId: 'D',
-          hint: "Tính từ đuôi '-ed' dùng để miêu tả cảm xúc của con người. Tính từ đuôi '-ing' dùng để miêu tả bản chất của sự vật, sự việc.",
-          explanation: "Câu này diễn tả cảm xúc của người nói ('I felt...'). Do đó, ta dùng tính từ 'embarrassed' (cảm thấy bối rối, xấu hổ). 'Embarrassing' có nghĩa là 'gây bối rối' (ví dụ: an embarrassing situation).",
-          type: 'multiple-choice',
-        },
-        {
-          id: 69,
-          question: "Young people .......... to succeed in life should work hard.",
-          options: [
-              { id: 'A', text: 'who wanting' },
-              { id: 'B', text: 'want' },
-              { id: 'C', text: 'wanting' },
-              { id: 'D', text: 'wanted' },
-          ],
-          correctAnswerId: 'C',
-          hint: "Rút gọn mệnh đề quan hệ chủ động bằng V-ing.",
-          explanation: "Câu đầy đủ là 'Young people who want to succeed...'. Mệnh đề quan hệ chủ động ('who want') được rút gọn thành V-ing ('wanting').",
-          type: 'multiple-choice',
-        },
-        {
-          id: 70,
-          question: ".......... is known to be good for digestion.",
-          options: [
-              { id: 'A', text: 'Eating yoghurt' },
-              { id: 'B', text: 'Having eaten yoghurt' },
-              { id: 'C', text: 'Yoghurt eaten' },
-              { id: 'D', text: 'Yoghurts' },
-          ],
-          correctAnswerId: 'A',
-          hint: "Dùng Gerund (V-ing) làm chủ ngữ của câu.",
-          explanation: "Chủ ngữ của câu là một hành động 'Việc ăn sữa chua' (Eating yoghurt). Do đó, ta dùng danh động từ (Gerund) 'Eating'.",
-          type: 'multiple-choice',
-        },
-        // Page 5
-        {
-          id: 71,
-          question: ".......... over the exam results, she rushed home to tell her family the good news.",
-          options: [
-              { id: 'A', text: 'Excited' },
-              { id: 'B', text: 'Excitement' },
-              { id: 'C', text: 'To excite' },
-              { id: 'D', text: 'Exciting' },
-          ],
-          correctAnswerId: 'A',
-          hint: "Rút gọn mệnh đề trạng ngữ. Khi chủ ngữ của hai mệnh đề giống nhau, có thể rút gọn mệnh đề đầu.",
-          explanation: "Câu đầy đủ là 'Because she was excited over the exam results...'. Khi rút gọn, ta bỏ liên từ và chủ ngữ, chuyển 'was' thành 'being', và 'being' có thể được lược bỏ, chỉ còn lại tính từ 'Excited'.",
-          type: 'multiple-choice',
-        },
-        {
-          id: 72,
-          question: "Are there any household chores for .......... men are better .......... than women ?",
-          options: [
-              { id: 'A', text: 'that/suit' },
-              { id: 'B', text: 'whose/suited' },
-              { id: 'C', text: 'which/suited' },
-              { id: 'D', text: 'which/suit' },
-          ],
-          correctAnswerId: 'C',
-          hint: "Dùng 'which' chỉ vật ('chores'). 'be suited for' nghĩa là phù hợp cho.",
-          explanation: "Đại từ quan hệ thay thế cho 'household chores' (vật) nên dùng 'which'. Cấu trúc 'be suited for somebody/something' có nghĩa là phù hợp với ai/cái gì.",
-          type: 'multiple-choice',
-        },
-        {
-          id: 73,
-          question: "Can you please tell me some information .......... to the job?",
-          options: [
-              { id: 'A', text: 'relating' },
-              { id: 'B', text: 'that relate' },
-              { id: 'C', text: 'that are relating' },
-              { id: 'D', text: 'that related' },
-          ],
-          correctAnswerId: 'A',
-          hint: "Rút gọn mệnh đề quan hệ chủ động.",
-          explanation: "Câu đầy đủ là 'some information that relates to the job'. Chủ ngữ 'information' là danh từ không đếm được nên động từ 'relates' phải chia. Khi rút gọn, ta dùng V-ing: 'relating'.",
-          type: 'multiple-choice',
-        },
-        {
-          id: 74,
-          question: "The truck .......... crashed into the back of a bus scattering glass everywhere.",
-          options: [
-              { id: 'A', text: 'it was loading with empty bottles' },
-              { id: 'B', text: 'loaded with empty bottles' },
-              { id: 'C', text: 'which loading with empty bottles' },
-              { id: 'D', text: 'loading with empty bottles' },
-          ],
-          correctAnswerId: 'B',
-          hint: "Rút gọn mệnh đề quan hệ bị động.",
-          explanation: "Câu này có hai khả năng: 'The truck which was loaded with...' (bị động) hoặc 'The truck loading...' (chủ động, nếu xe tải tự chất hàng). Ý nghĩa hợp lý hơn là xe tải 'được chất đầy' chai rỗng. Mệnh đề bị động 'which was loaded' được rút gọn thành 'loaded'.",
-          type: 'multiple-choice',
-        },
-        {
-          id: 75,
-          question: "None of the people .......... to the party can come.",
-          options: [
-              { id: 'A', text: 'invite' },
-              { id: 'B', text: 'invited' },
-              { id: 'C', text: 'inviting' },
-              { id: 'D', text: 'to invite' },
-          ],
-          correctAnswerId: 'B',
-          hint: "Rút gọn mệnh đề quan hệ bị động.",
-          explanation: "Câu đầy đủ là 'None of the people who were invited...'. Những người này 'được mời'. Mệnh đề quan hệ bị động 'who were invited' được rút gọn thành V3/ed ('invited').",
-          type: 'multiple-choice',
-        },
-        {
-          id: 76,
-          question: ".......... the noise and pollution in the city, the Browns move to the countryside.",
-          options: [
-              { id: 'A', text: 'Be tired of' },
-              { id: 'B', text: 'Being tired of' },
-              { id: 'C', text: 'Tired of' },
-              { id: 'D', text: 'Were tired of' },
-          ],
-          correctAnswerId: 'C',
-          hint: "Rút gọn mệnh đề trạng ngữ chỉ lý do.",
-          explanation: "Câu đầy đủ là 'Because they were tired of...'. Khi rút gọn, ta có thể dùng 'Being tired of...' hoặc bỏ luôn 'Being', chỉ còn 'Tired of...'. Cả hai đều đúng, nhưng 'Tired of' là một lựa chọn trong đáp án.",
-          type: 'multiple-choice',
-        },
-        {
-          id: 77,
-          question: "the author / released / earned / last year / the book / a lot of money. -> Rearrange to form a sentence.",
-          options: [
-              { id: 'A', text: 'Released last year, the book earned the author a lot of money.' },
-              { id: 'B', text: 'Released last year, the author earned the book a lot of money.' },
-              { id: 'C', text: 'The author released the book last year a lot of money earned.' },
-              { id: 'D', text: 'The released book last year earned the author a lot of money.' },
-          ],
-          correctAnswerId: 'A',
-          hint: "Sử dụng mệnh đề phân từ rút gọn ở đầu câu. Chủ ngữ của mệnh đề rút gọn phải tương ứng với chủ ngữ của mệnh đề chính.",
-          explanation: "Cái 'được phát hành' ('Released last year') là 'quyển sách' ('the book'). Do đó, chủ ngữ của mệnh đề chính phải là 'the book'. Câu A đúng vì 'the book' là chủ ngữ chính và nó 'earned the author a lot of money' (mang lại cho tác giả nhiều tiền).",
-          type: 'multiple-choice',
-        },
-        {
-          id: 78,
-          question: "Do you know any restaurant ................?",
-          options: [
-              { id: 'A', text: 'have a really good meal' },
-              { id: 'B', text: 'where we can have a really good meal' },
-              { id: 'C', text: 'has a really good meal' },
-              { id: 'D', text: 'that we can have a really good meal' },
-          ],
-          correctAnswerId: 'B',
-          hint: "Dùng 'where' để chỉ nơi chốn mà một hành động xảy ra.",
-          explanation: "Mệnh đề quan hệ bổ nghĩa cho 'restaurant' (nơi chốn). Chúng ta ăn 'tại' nhà hàng đó ('have a meal at the restaurant'), nên trạng từ quan hệ 'where' (= at which) là phù hợp.",
-          type: 'multiple-choice',
-        },
-        {
-          id: 79,
-          question: "The secretaries were the only people .................",
-          options: [
-              { id: 'A', text: 'to get a pay rise' },
-              { id: 'B', text: 'getting a pay rise' },
-              { id: 'C', text: 'who to get a pay rise' },
-              { id: 'D', text: 'to whom get a pay rise.' },
-          ],
-          correctAnswerId: 'A',
-          hint: "Sau 'the only', mệnh đề quan hệ có thể được rút gọn thành 'to V-inf'.",
-          explanation: "Câu đầy đủ có thể là '...the only people who got a pay rise'. Do đứng sau 'the only people', mệnh đề quan hệ được rút gọn thành dạng 'to V-inf' ('to get').",
-          type: 'multiple-choice',
-        },
-        {
-          id: 80,
-          question: "The reason ........... was that her mother fell seriously ill.",
-          options: [
-              { id: 'A', text: "where she didn't come" },
-              { id: 'B', text: "when she didn't come" },
-              { id: 'C', text: "she didn't come" },
-              { id: 'D', text: "for which she didn't come" },
-          ],
-          correctAnswerId: 'C',
-          hint: "Sau 'The reason', ta có thể dùng 'why' hoặc bỏ 'why'. 'why' = 'for which'.",
-          explanation: "Câu đầy đủ là 'The reason why she didn't come...'. Tuy nhiên, trạng từ quan hệ 'why' có thể được lược bỏ, chỉ còn lại mệnh đề 'she didn't come'. 'for which' cũng đúng ngữ pháp nhưng 'she didn't come' là lựa chọn có trong đáp án và tự nhiên hơn.",
-          type: 'multiple-choice',
-        },
-        // ERROR IDENTIFICATION
-        {
-          id: 81,
-          question: "<u>There are</u> about 500 species of poisonous snakes, <u>200 of them</u> are <u>harmful to</u> <u>man</u>.",
-          options: [
-            { id: 'A', text: 'There are' },
-            { id: 'B', text: '200 of them' },
-            { id: 'C', text: 'harmful to' },
-            { id: 'D', text: 'man' },
-          ],
-          correctAnswerId: 'B',
-          hint: "Không thể nối hai mệnh đề độc lập chỉ bằng một dấu phẩy (lỗi comma splice). Cần dùng đại từ quan hệ.",
-          explanation: "Lỗi ở '200 of them'. Để nối hai mệnh đề, cần dùng đại từ quan hệ. Sửa đúng là '200 of which' để tạo thành một mệnh đề quan hệ không xác định.",
-          type: 'error-identification',
-        },
-        {
-          id: 82,
-          question: "The electric cooker <u>who</u> is wrapped in the box is <u>made of</u> <u>steel</u>.",
-          options: [
-            { id: 'A', text: 'who' },
-            { id: 'B', text: 'is wrapped' },
-            { id: 'C', text: 'made of' },
-            { id: 'D', text: 'steel' },
-          ],
-          correctAnswerId: 'A',
-          hint: "'who' dùng cho người, 'which' dùng cho vật.",
-          explanation: "Lỗi ở 'who'. 'The electric cooker' (nồi cơm điện) là vật, do đó phải dùng đại từ quan hệ 'which' hoặc 'that'.",
-          type: 'error-identification',
-        },
-        {
-          id: 83,
-          question: "The legal age <u>which</u> a person <u>is considered</u> to be an adult is <u>customarily</u> 18.",
-          options: [
-            { id: 'A', text: 'which' },
-            { id: 'B', text: 'is considered' },
-            { id: 'C', text: 'customarily' },
-            { id: 'D', text: '18' },
-          ],
-          correctAnswerId: 'A',
-          hint: "Cần một trạng từ quan hệ chỉ thời điểm hoặc hoàn cảnh. 'at which' hoặc 'when'.",
-          explanation: "Lỗi ở 'which'. Phải là 'at which' hoặc 'when'. Tuổi hợp pháp 'mà tại đó' (at which) một người được coi là trưởng thành. 'The legal age at which...'.",
-          type: 'error-identification',
-        },
-        {
-          id: 84,
-          question: "The gardener used the scissors <u>which</u> he had bought <u>them</u> from a village shop <u>to cut</u> the flowers.",
-          options: [
-            { id: 'A', text: 'which' },
-            { id: 'B', text: 'them' },
-            { id: 'C', text: 'to cut' },
-            { id: 'D', text: 'flowers' },
-          ],
-          correctAnswerId: 'B',
-          hint: "Trong mệnh đề quan hệ, đại từ quan hệ đã thay thế cho tân ngữ, không lặp lại tân ngữ đó.",
-          explanation: "Lỗi ở 'them'. Đại từ quan hệ 'which' đã thay thế cho 'the scissors' làm tân ngữ của động từ 'bought'. Do đó, không được lặp lại tân ngữ 'them'.",
-          type: 'error-identification',
-        },
-        {
-          id: 85,
-          question: "The area with <u>the greatest number</u> of thunderstorms each year <u>is</u> the interior of the Florida peninsula, <u>which</u> the Atlantic and Gulf airstreams meet.",
-          options: [
-            { id: 'A', text: 'the greatest number' },
-            { id: 'B', text: 'is' },
-            { id: 'C', text: 'which' },
-            { id: 'D', text: 'meet' },
-          ],
-          correctAnswerId: 'C',
-          hint: "'which' làm chủ ngữ/tân ngữ. 'where' chỉ nơi chốn.",
-          explanation: "Lỗi ở 'which'. Mệnh đề quan hệ mô tả nơi các dòng không khí gặp nhau ('meet'). Do đó, cần trạng từ quan hệ chỉ nơi chốn 'where' (= at which).",
-          type: 'error-identification',
-        },
-        {
-          id: 86,
-          question: "Aloha is a Hawaiian word <u>meaning</u> ‘love’, <u>that</u> can be used <u>to say</u> hello or goodbye.",
-          options: [
-            { id: 'A', text: 'meaning' },
-            { id: 'B', text: 'that' },
-            { id: 'C', text: 'to say' },
-            { id: 'D', text: 'or' },
-          ],
-          correctAnswerId: 'B',
-          hint: "Không dùng 'that' trong mệnh đề quan hệ không xác định (sau dấu phẩy).",
-          explanation: "Lỗi ở 'that'. Mệnh đề quan hệ này cung cấp thêm thông tin cho 'a Hawaiian word meaning love', nên nó là mệnh đề không xác định và phải dùng 'which', không được dùng 'that'.",
-          type: 'error-identification',
-        },
-        {
-          id: 87,
-          question: "People <u>whose</u> exercise <u>frequently</u> have greater physical endurance than those who <u>doesn't</u>.",
-          options: [
-            { id: 'A', text: 'whose' },
-            { id: 'B', text: 'frequently' },
-            { id: 'C', text: 'greater' },
-            { id: 'D', text: 'doesn\'t' },
-          ],
-          correctAnswerId: 'D',
-          hint: "Chủ ngữ số nhiều đi với động từ số nhiều.",
-          explanation: "Lỗi ở 'doesn't'. 'those who' thay thế cho 'people' (số nhiều), do đó trợ động từ phải là 'don't'.",
-          type: 'error-identification',
-        },
-        // Page 6
-        {
-          id: 88,
-          question: "I <u>have</u> always <u>wanted</u> to visit Paris, <u>that</u> is the capital <u>of</u> France.",
-          options: [
-            { id: 'A', text: 'have' },
-            { id: 'B', text: 'wanted' },
-            { id: 'C', text: 'that' },
-            { id: 'D', text: 'of' },
-          ],
-          correctAnswerId: 'C',
-          hint: "Không dùng 'that' trong mệnh đề quan hệ không xác định (sau dấu phẩy).",
-          explanation: "Lỗi ở 'that'. 'Paris' là danh từ riêng, nên mệnh đề quan hệ theo sau là mệnh đề không xác định, phải dùng 'which'.",
-          type: 'error-identification',
-        },
-        {
-          id: 89,
-          question: "Shakespeare, <u>who</u> works are famous all over the world, <u>was</u> an English <u>writer</u>.",
-          options: [
-            { id: 'A', text: 'who' },
-            { id: 'B', text: 'all over' },
-            { id: 'C', text: 'was' },
-            { id: 'D', text: 'writer' },
-          ],
-          correctAnswerId: 'A',
-          hint: "Dùng 'whose' để chỉ sự sở hữu.",
-          explanation: "Lỗi ở 'who'. Cần một đại từ quan hệ chỉ sở hữu để nói về 'tác phẩm của Shakespeare'. Phải dùng 'whose works'.",
-          type: 'error-identification',
-        },
-        {
-          id: 90,
-          question: "The water temperature <u>in a spring</u> depends <u>on that</u> of the soil through <u>where</u> the water flows.",
-          options: [
-            { id: 'A', text: 'in a spring' },
-            { id: 'B', text: 'on that' },
-            { id: 'C', text: 'where' },
-            { id: 'D', text: 'flows' },
-          ],
-          correctAnswerId: 'C',
-          hint: "Không dùng giới từ ('through') trước trạng từ quan hệ ('where'). Có thể dùng 'through which'.",
-          explanation: "Lỗi ở 'where'. Trạng từ quan hệ 'where' đã bao hàm giới từ, nên không đi sau giới từ 'through'. Sửa đúng phải là 'through which'.",
-          type: 'error-identification',
-        },
-        // New Questions (Replaced Set)
-        {
-          id: 91,
-          question: "Nam’s parents were here last week and gave us a present.<br/>Combine: Nam’s parents, ________, gave us a present.",
-          options: [
-            { id: 'A', text: 'who were here last week' },
-            { id: 'B', text: 'which were here last week' },
-            { id: 'C', text: 'whose were here last week' },
-            { id: 'D', text: 'whom were here last week' },
-          ],
-          correctAnswerId: 'A',
-          hint: "'Nam's parents' là người và mệnh đề quan hệ cung cấp thêm thông tin, nên dùng mệnh đề quan hệ không xác định (có dấu phẩy).",
-          explanation: "'Nam's parents' là danh từ đã xác định, nên ta dùng mệnh đề quan hệ không xác định (có dấu phẩy) để bổ nghĩa. 'who' được dùng để chỉ người và làm chủ ngữ cho động từ 'were'.",
-          type: 'multiple-choice',
-        },
-        {
-          id: 92,
-          question: "I lent you a book. It was written by a friend of mine. She lives in France.<br/>Combine: The book I lent you ________.",
-          options: [
-            { id: 'A', text: 'was written by a friend who lives in France' },
-            { id: 'B', text: 'wrote by a friend who lives in France' },
-            { id: 'C', text: 'was written by a friend which lives in France' },
-            { id: 'D', text: 'written by a friend who lives in France' },
-          ],
-          correctAnswerId: 'A',
-          hint: "Mệnh đề chính cần có động từ chính. Mệnh đề quan hệ 'who lives in France' bổ nghĩa cho 'a friend'.",
-          explanation: "Mệnh đề chính là 'The book [...] was written by a friend...'. Mệnh đề quan hệ '(which) I lent you' bổ nghĩa cho 'The book'. Mệnh đề quan hệ thứ hai 'who lives in France' bổ nghĩa cho 'a friend'. Đáp án A có cấu trúc đầy đủ và đúng ngữ pháp. Đáp án D thiếu động từ to be.",
-          type: 'multiple-choice',
-        },
-        {
-          id: 93,
-          question: "I used to own a dog. People came to the door. The dog never barked at them.<br/>Combine: The dog ________ never barked at them.",
-          options: [
-            { id: 'A', text: 'which I used to own' },
-            { id: 'B', text: 'I used to own which' },
-            { id: 'C', text: 'I used to own who' },
-            { id: 'D', text: 'whom I used to own' },
-          ],
-          correctAnswerId: 'A',
-          hint: "Mệnh đề quan hệ bổ nghĩa cho 'The dog'. Đại từ quan hệ 'which' có thể được ẩn đi.",
-          explanation: "Mệnh đề quan hệ '(which) I used to own' bổ nghĩa cho 'The dog'. Mệnh đề chính là 'The dog [...] never barked at them'. Đáp án A đặt mệnh đề quan hệ đúng vị trí và dùng 'which' cho vật (the dog).",
-          type: 'multiple-choice',
-        },
-        {
-          id: 94,
-          question: "I bought my car from a woman. She lives in a house. You can see the house over there.<br/>Combine: The woman I bought my car from ________.",
-          options: [
-            { id: 'A', text: 'lives in the house which you can see over there' },
-            { id: 'B', text: 'live in a house you can see' },
-            { id: 'C', text: 'who live in the house you can see' },
-            { id: 'D', text: 'living in a house you can see' },
-          ],
-          correctAnswerId: 'A',
-          hint: "'The woman' là chủ ngữ của mệnh đề chính. Động từ chính là 'lives'.",
-          explanation: "Mệnh đề quan hệ '(whom) I bought my car from' bổ nghĩa cho 'The woman'. Mệnh đề chính là 'The woman [...] lives in the house...'. Mệnh đề quan hệ thứ hai '(which) you can see over there' bổ nghĩa cho 'the house'. Đáp án A kết hợp đúng các mệnh đề và chia động từ 'lives' chính xác với chủ ngữ số ít 'The woman'.",
-          type: 'multiple-choice',
-        },
-        {
-          id: 95,
-          question: "My friend Bill has decided to buy a motorbike. His car was stolen last week.<br/>Combine: My friend Bill, ________, has decided to buy a motorbike.",
-          options: [
-            { id: 'A', text: 'whose car was stolen last week' },
-            { id: 'B', text: 'who car was stolen last week' },
-            { id: 'C', text: 'that car was stolen last week' },
-            { id: 'D', text: 'which car was stolen last week' },
-          ],
-          correctAnswerId: 'A',
-          hint: "Dùng 'whose' để chỉ sự sở hữu ('his car' -> 'whose car').",
-          explanation: "'My friend Bill' là danh từ riêng, nên mệnh đề quan hệ là không xác định (có dấu phẩy). 'His car' chỉ sự sở hữu nên ta dùng 'whose car'.",
-          type: 'multiple-choice',
-        },
-        {
-          id: 96,
-          question: "I bought a new car. It cost me a lot of money.<br/>Combine: The new car ________.",
-          options: [
-            { id: 'A', text: 'I bought cost me a lot of money' },
-            { id: 'B', text: 'I bought costs me a lot of money' },
-            { id: 'C', text: 'I buy cost me a lot of money' },
-            { id: 'D', text: 'which I buy cost a lot of money' },
-          ],
-          correctAnswerId: 'A',
-          hint: "Mệnh đề quan hệ '(which) I bought' bổ nghĩa cho 'The new car'. Động từ 'cost' ở quá khứ.",
-          explanation: "Mệnh đề chính là 'The new car [...] cost me a lot of money'. Mệnh đề quan hệ rút gọn '(which) I bought' được đặt vào giữa. Động từ 'cost' ở quá khứ (vì 'bought' cũng ở quá khứ) nên giữ nguyên là 'cost'. (cost-cost-cost).",
-          type: 'multiple-choice',
-        },
-        {
-          id: 97,
-          question: "I just talked to the girl. I can never remember her name.<br/>Combine: I just talked to the girl ________ I can never remember.",
-          options: [
-            { id: 'A', text: 'whose name' },
-            { id: 'B', text: 'which name' },
-            { id: 'C', text: 'who name' },
-            { id: 'D', text: 'whom name' },
-          ],
-          correctAnswerId: 'A',
-          hint: "Dùng 'whose' để chỉ sự sở hữu ('her name').",
-          explanation: "'her name' chỉ sự sở hữu nên ta dùng đại từ quan hệ 'whose' để kết hợp. 'whose name' có nghĩa là 'tên của cô gái đó'.",
-          type: 'multiple-choice',
-        },
-        {
-          id: 98,
-          question: "The librarian wants to speak to a man. We borrowed his car yesterday.<br/>Combine: The librarian wants to speak to the man ________ we borrowed yesterday.",
-          options: [
-            { id: 'A', text: 'whose car' },
-            { id: 'B', text: 'who car' },
-            { id: 'C', text: 'which car' },
-            { id: 'D', text: 'whom car' },
-          ],
-          correctAnswerId: 'A',
-          hint: "Sử dụng 'whose' để chỉ sự sở hữu ('his car').",
-          explanation: "'his car' chỉ sự sở hữu nên ta dùng 'whose car' để bắt đầu mệnh đề quan hệ. Cụm 'whose car' đóng vai trò tân ngữ cho động từ 'borrowed'.",
-          type: 'multiple-choice',
-        },
-        {
-          id: 99,
-          question: "My friend Albert has decided to buy a motorbike. His car was stolen.<br/>Combine: My friend Albert, ________, has decided to buy a motorbike.",
-          options: [
-            { id: 'A', text: 'whose car was stolen' },
-            { id: 'B', text: 'who car was stolen' },
-            { id: 'C', text: 'that car was stolen' },
-            { id: 'D', text: 'which car was stolen' },
-          ],
-          correctAnswerId: 'A',
-          hint: "Dùng 'whose' cho sở hữu và dấu phẩy cho mệnh đề không xác định.",
-          explanation: "'My friend Albert' là danh từ riêng, nên dùng mệnh đề không xác định (có dấu phẩy). 'His car' chỉ sự sở hữu nên dùng 'whose car'.",
-          type: 'multiple-choice',
-        },
-        {
-          id: 100,
-          question: "Carol is a vegetarian. I cooked a meal for her last week.<br/>Combine: Carol, ________, is a vegetarian.",
-          options: [
-            { id: 'A', text: 'for whom I cooked a meal last week' },
-            { id: 'B', text: 'who I cooked a meal for last week' },
-            { id: 'C', text: 'whom I cooked a meal for her last week' },
-            { id: 'D', text: 'that I cooked a meal for last week' },
-          ],
-          correctAnswerId: 'A',
-          hint: "'for her' -> 'for whom'. Giới từ có thể đảo lên trước đại từ quan hệ. Đây là cách dùng trang trọng.",
-          explanation: "'Carol' là danh từ riêng, nên dùng mệnh đề không xác định. Mệnh đề gốc là 'I cooked a meal for her'. 'her' là tân ngữ chỉ người, nên thay bằng 'whom'. Ta có thể đảo giới từ lên trước: '...for whom I cooked a meal...'. Đáp án C lặp lại tân ngữ 'her' là sai.",
-          type: 'multiple-choice',
-        },
-        {
-          id: 101,
-          question: "I was sitting next to a boy in the exam. He told me the answer.<br/>Combine: The boy I was sitting next to in the exam ________.",
-          options: [
-            { id: 'A', text: 'told me the answer' },
-            { id: 'B', text: 'who told me the answer' },
-            { id: 'C', text: 'which told me the answer' },
-            { id: 'D', text: 'that told me the answer' },
-          ],
-          correctAnswerId: 'A',
-          hint: "Mệnh đề quan hệ '(whom) I was sitting next to...' đã bổ nghĩa cho 'The boy'. Phần còn lại là vị ngữ của mệnh đề chính.",
-          explanation: "Mệnh đề quan hệ là '(whom) I was sitting next to in the exam'. Mệnh đề chính là 'The boy [...] told me the answer'. Đáp án A là phần vị ngữ còn lại của mệnh đề chính.",
-          type: 'multiple-choice',
-        },
-        {
-          id: 102,
-          question: "I bought a new computer. It costs a lot of money.<br/>Combine: The new computer ________.",
-          options: [
-            { id: 'A', text: 'I bought costs a lot of money' },
-            { id: 'B', text: 'which I buy cost a lot of money' },
-            { id: 'C', text: 'that I buy costs a lot of money' },
-            { id: 'D', text: 'I buying cost a lot of money' },
-          ],
-          correctAnswerId: 'A',
-          hint: "Chú ý thì của động từ. 'I bought' ở quá khứ, nhưng 'It costs' ở hiện tại.",
-          explanation: "Mệnh đề quan hệ là '(which) I bought'. Mệnh đề chính là 'The new computer [...] costs a lot of money'. Động từ 'costs' giữ nguyên ở thì hiện tại đơn như câu gốc.",
-          type: 'multiple-choice',
-        },
-        {
-          id: 103,
-          question: "My neighbours have three children. The children make a lot of noise. My neighbours never apologise.<br/>Combine: My neighbours, ________, never apologise.",
-          options: [
-            { id: 'A', text: 'whose three children make a lot of noise' },
-            { id: 'B', text: 'who children make a lot of noise' },
-            { id: 'C', text: 'which children make a lot of noise' },
-            { id: 'D', text: 'their children make a lot of noise' },
-          ],
-          correctAnswerId: 'A',
-          hint: "Mệnh đề quan hệ không xác định bổ nghĩa cho 'My neighbours', diễn tả sự sở hữu 'whose children'.",
-          explanation: "Mệnh đề không xác định bổ nghĩa cho 'My neighbours'. Ta muốn nói 'những đứa con của họ' -> 'whose three children'. Cả mệnh đề 'whose three children make a lot of noise' sẽ được đặt vào giữa.",
-          type: 'multiple-choice',
-        },
-        {
-          id: 104,
-          question: "Do you know the woman? We are sharing a flat with her son.<br/>Combine: Do you know the woman ________ we are sharing a flat?",
-          options: [
-            { id: 'A', text: 'whose son' },
-            { id: 'B', text: 'who son' },
-            { id: 'C', text: 'that son' },
-            { id: 'D', text: 'whom son' },
-          ],
-          correctAnswerId: 'A',
-          hint: "Câu hỏi đã bị thiếu giới từ 'with' ở cuối. Dựa vào cấu trúc, 'her son' -> 'whose son'.",
-          explanation: "'her son' chỉ sự sở hữu, nên dùng 'whose son'. Câu hoàn chỉnh phải là 'Do you know the woman whose son we are sharing a flat with?'. Đáp án A là phần đúng nhất trong các lựa chọn.",
-          type: 'multiple-choice',
-        },
-        {
-          id: 105,
-          question: "The ship hit an iceberg and sank. Warning messages had been sent to it. The ship ignored these.<br/>Combine: The ship, ________, sank after hitting an iceberg.",
-          options: [
-            { id: 'A', text: 'which ignored warning messages' },
-            { id: 'B', text: 'who ignored warning messages' },
-            { id: 'C', text: 'that ignoring warning messages' },
-            { id: 'D', text: 'whose ignored warning messages' },
-          ],
-          correctAnswerId: 'A',
-          hint: "Dùng mệnh đề quan hệ không xác định với 'which' để bổ nghĩa cho 'The ship'.",
-          explanation: "Dùng mệnh đề quan hệ không xác định để bổ nghĩa cho 'The ship'. 'which' thay thế cho 'The ship' và làm chủ ngữ cho động từ 'ignored'. Không dùng 'that' sau dấu phẩy.",
-          type: 'multiple-choice',
-        },
-        {
-          id: 106,
-          question: "The postman realized I was on holiday. You had sent me a parcel. The postman left it next door.<br/>Combine: The postman, ________, left it next door.",
-          options: [
-            { id: 'A', text: 'to whom you had sent a parcel' },
-            { id: 'B', text: 'who you had sent a parcel' },
-            { id: 'C', text: 'that you sent a parcel' },
-            { id: 'D', text: 'whom you sent parcel' },
-          ],
-          correctAnswerId: 'A',
-          hint: "Mệnh đề quan hệ không xác định. 'You had sent a parcel to him (the postman)' -> 'to whom...'.",
-          explanation: "Mệnh đề quan hệ không xác định bổ nghĩa cho 'The postman'. Câu gốc là 'You had sent a parcel to the postman'. Tân ngữ 'the postman' được thay bằng 'whom', và giới từ 'to' được đảo lên trước thành 'to whom'.",
-          type: 'multiple-choice',
-        },
-        {
-          id: 107,
-          question: "We went to a beach on the first day of our holiday. It was covered in seaweed. This smelled a lot.<br/>Combine: The beach we went to ________.",
-          options: [
-            { id: 'A', text: 'was covered in seaweed that smelled a lot' },
-            { id: 'B', text: 'covered in seaweed which smelled a lot' },
-            { id: 'C', text: 'covering seaweed smelled a lot' },
-            { id: 'D', text: 'was covered seaweed that smelled a lot' },
-          ],
-          correctAnswerId: 'A',
-          hint: "Mệnh đề chính là 'The beach... was covered...'. Mệnh đề quan hệ thứ hai bổ nghĩa cho 'seaweed'.",
-          explanation: "Mệnh đề quan hệ thứ nhất là '(which) we went to'. Mệnh đề chính là 'The beach [...] was covered in seaweed'. Mệnh đề quan hệ thứ hai là 'that/which smelled a lot' bổ nghĩa cho 'seaweed'. Đáp án A có cấu trúc đúng.",
-          type: 'multiple-choice',
-        },
-        {
-          id: 108,
-          question: "I lost my wallet last week. It was found by a workman. He was digging a hole in the street outside our house.<br/>Combine: The wallet ________ was found by a workman who was digging outside our house.",
-          options: [
-            { id: 'A', text: 'I lost last week' },
-            { id: 'B', text: 'which I lose last week' },
-            { id: 'C', text: 'that I lose last week' },
-            { id: 'D', text: 'lost last week' },
-          ],
-          correctAnswerId: 'A',
-          hint: "Chèn mệnh đề quan hệ vào giữa chủ ngữ và vị ngữ của mệnh đề chính.",
-          explanation: "Mệnh đề chính là 'The wallet [...] was found by a workman...'. Mệnh đề quan hệ 'I lost last week' (rút gọn từ 'which I lost last week') được chèn vào để bổ nghĩa cho 'The wallet'.",
-          type: 'multiple-choice',
-        },
-        {
-          id: 109,
-          question: "A woman's jewels were stolen. A police officer was staying in the same hotel. The woman was interviewed by him.<br/>Combine: The woman ________ was interviewed by a police officer staying in the same hotel.",
-          options: [
-            { id: 'A', text: 'whose jewels were stolen' },
-            { id: 'B', text: 'who jewels were stolen' },
-            { id: 'C', text: 'which jewels were stolen' },
-            { id: 'D', text: 'that jewels were stolen' },
-          ],
-          correctAnswerId: 'A',
-          hint: "Dùng 'whose' để chỉ sở hữu 'A woman's jewels'. Phần còn lại của câu là vị ngữ.",
-          explanation: "Mệnh đề quan hệ 'whose jewels were stolen' bổ nghĩa cho 'The woman'. Mệnh đề chính là 'The woman [...] was interviewed by a police officer...'. Mệnh đề quan hệ 'who was staying...' được rút gọn thành 'staying...' để bổ nghĩa cho 'police officer'.",
-          type: 'multiple-choice',
-        },
-        {
-          id: 110,
-          question: "A teenager scored a goal. It was the most beautiful of the match.<br/>Combine: The goal ________ was the most beautiful of the match.",
-          options: [
-            { id: 'A', text: 'scoring by a teenager' },
-            { id: 'B', text: 'scored by a teenager' },
-            { id: 'C', text: 'who scored by a teenager' },
-            { id: 'D', text: 'was scored by a teenager' },
-          ],
-          correctAnswerId: 'B',
-          hint: "Rút gọn mệnh đề quan hệ bị động 'which was scored by a teenager'.",
-          explanation: "Câu đầy đủ là 'The goal which was scored by a teenager was the most beautiful of the match'. Mệnh đề quan hệ bị động 'which was scored' được rút gọn thành V3/ed 'scored'.",
-          type: 'multiple-choice',
-        },
-      ];
-      // END: data/quizData.ts
+    //============= Icons ==============
+    const LightbulbIcon = () => (
+      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+        <path d="M11 3a1 1 0 100 2h.01a1 1 0 100-2H11zM11 6a1 1 0 011 1v5a1 1 0 11-2 0V7a1 1 0 011-1zM4.755 9.06A7.5 7.5 0 0110 3.344V2.5a.5.5 0 011 0v.844a7.5 7.5 0 015.245 5.716.5.5 0 01-.99.128A6.5 6.5 0 0010.5 4.344V4.5a.5.5 0 01-1 0v-.156a6.5 6.5 0 00-4.745 4.888.5.5 0 11-.99-.128z" />
+        <path fillRule="evenodd" d="M10 18a7.5 7.5 0 005.245-13.176.5.5 0 11.707.707A6.5 6.5 0 1110 5.5a.5.5 0 011 0 7.5 7.5 0 00-6.245 11.676.5.5 0 11-.707-.707A7.5 7.5 0 0010 18z" clipRule="evenodd" />
+        <path d="M10 12.5a.5.5 0 01.5.5v1.207l.22-.22a.5.5 0 11.707.707l-1.5 1.5a.5.5 0 01-.707 0l-1.5-1.5a.5.5 0 01.707-.707l.22.22V13a.5.5 0 01.5-.5z" />
+      </svg>
+    );
 
-      // START: components/icons.tsx
-      const LightbulbIcon = () => (
-        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-          <path d="M10,2C6.13,2,3,5.13,3,9c0,2.38,1.19,4.47,3,5.74V17a1,1,0,0,0,1,1h6a1,1,0,0,0,1-1v-2.26c1.81-1.27,3-3.36,3-5.74C17,5.13,13.87,2,10,2z M12,15H8v-1h4V15z M12,13H8v-1h4V13z M10.5,10.78L10,12l-0.5-1.22C9.03,10.45,8.5,9.79,8.5,9c0-0.83,0.67-1.5,1.5-1.5s1.5,0.67,1.5,1.5C11.5,9.79,10.97,10.45,10.5,10.78z" />
-        </svg>
-      );
+    const CheckCircleIcon = () => (
+      <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+      </svg>
+    );
 
-      const CheckCircleIcon = () => (
-        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-        </svg>
-      );
+    const XCircleIcon = () => (
+      <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+      </svg>
+    );
 
-      const XCircleIcon = () => (
-        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
-        </svg>
-      );
-      // END: components/icons.tsx
-      
-      // START: components/WelcomeScreen.tsx
-      const WelcomeScreen = ({ onStart }) => {
-        const [name, setName] = useState('');
 
-        const handleSubmit = (e) => {
-          e.preventDefault();
-          if (name.trim()) {
-            onStart(name.trim());
-          }
-        };
+    //=========== Components ===========
+    function WelcomeScreen({ onStart }) {
+      const [name, setName] = React.useState('');
 
-        return (
-          <div className="bg-white p-8 rounded-2xl shadow-lg text-center max-w-md mx-auto animate-fade-in">
-            <h1 className="text-3xl font-bold text-slate-800 mb-2">Chào mừng đến với Quiz</h1>
-            <h2 className="text-xl font-semibold text-sky-600 mb-6">Chuyên đề: Mệnh đề Quan hệ</h2>
-            <p className="text-slate-600 mb-8">Hãy nhập tên của bạn để bắt đầu làm bài và xem bạn hiểu rõ về Mệnh đề Quan hệ đến đâu nhé!</p>
-            <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+      const handleSubmit = (e) => {
+        e.preventDefault();
+        if (name.trim()) {
+          onStart(name.trim());
+        }
+      };
+
+      return (
+        <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 p-4">
+          <div className="w-full max-w-md bg-white rounded-2xl shadow-xl p-8 text-center animate-fade-in">
+            <h1 className="text-3xl md:text-4xl font-bold text-gray-800 mb-2">Bài tập trắc nghiệm</h1>
+            <h2 className="text-2xl md:text-3xl font-bold text-blue-600 mb-6">Mệnh Đề Quan Hệ</h2>
+            <p className="text-gray-600 mb-8">Nhập tên của bạn để bắt đầu thử thách kiến thức ngữ pháp nhé!</p>
+            <form onSubmit={handleSubmit}>
               <input
                 type="text"
+                placeholder="Nhập tên của bạn..."
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="Nhập tên của bạn"
-                className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-sky-500 transition-shadow"
-                aria-label="Player Name"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-300 mb-6 text-lg"
+                aria-label="Player name"
               />
               <button
                 type="submit"
                 disabled={!name.trim()}
-                className="w-full px-4 py-3 bg-sky-600 text-white font-bold rounded-lg hover:bg-sky-700 disabled:bg-slate-400 disabled:cursor-not-allowed transition-all transform hover:scale-105"
+                className="w-full bg-blue-600 text-white font-bold py-3 px-6 rounded-lg shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-transform transform hover:scale-105 disabled:bg-gray-400 disabled:cursor-not-allowed disabled:transform-none text-lg"
               >
-                Bắt đầu
+                Bắt đầu làm bài
               </button>
             </form>
           </div>
-        );
-      };
-      // END: components/WelcomeScreen.tsx
-
-      // START: components/QuizScreen.tsx
-      const QuizScreen = ({ onFinish }) => {
-        const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-        const [score, setScore] = useState(0);
-        const [selectedAnswerId, setSelectedAnswerId] = useState(null);
-        const [isAnswered, setIsAnswered] = useState(false);
-        const [showHint, setShowHint] = useState(false);
-        const [isFirstAttempt, setIsFirstAttempt] = useState(true);
-
-        const currentQuestion = useMemo(() => quizData[currentQuestionIndex], [currentQuestionIndex]);
-
-        const handleAnswerSelect = useCallback((optionId) => {
-          if (isAnswered) return;
-
-          setSelectedAnswerId(optionId);
-          setIsAnswered(true);
-
-          if (optionId === currentQuestion.correctAnswerId) {
-            if (isFirstAttempt) {
-              setScore(prevScore => prevScore + 10);
-            }
-          }
-          
-          setIsFirstAttempt(false);
-        }, [isAnswered, currentQuestion.correctAnswerId, isFirstAttempt]);
-
-        const handleNextQuestion = useCallback(() => {
-          const nextIndex = currentQuestionIndex + 1;
-          if (nextIndex < quizData.length) {
-            setCurrentQuestionIndex(nextIndex);
-            setSelectedAnswerId(null);
-            setIsAnswered(false);
-            setShowHint(false);
-            setIsFirstAttempt(true);
-          } else {
-            onFinish(score);
-          }
-        }, [currentQuestionIndex, onFinish, score]);
-
-        const getOptionClasses = (option) => {
-          if (!isAnswered) {
-            return "bg-white hover:bg-sky-100";
-          }
-          if (option.id === currentQuestion.correctAnswerId) {
-            return "bg-green-200 border-green-500";
-          }
-          if (option.id === selectedAnswerId) {
-            return "bg-red-200 border-red-500";
-          }
-          return "bg-white";
-        };
-        
-        const handleHintShow = useCallback(() => {
-          if (!isAnswered) {
-            setShowHint(true);
-          }
-        }, [isAnswered]);
-
-        const handleHintHide = useCallback(() => {
-          setShowHint(false);
-        }, []);
-
-        useEffect(() => {
-          if (showHint) {
-            window.addEventListener('mouseup', handleHintHide);
-            window.addEventListener('touchend', handleHintHide);
-          } else {
-            window.removeEventListener('mouseup', handleHintHide);
-            window.removeEventListener('touchend', handleHintHide);
-          }
-
-          return () => {
-            window.removeEventListener('mouseup', handleHintHide);
-            window.removeEventListener('touchend', handleHintHide);
-          };
-        }, [showHint, handleHintHide]);
-
-        const progressPercentage = ((currentQuestionIndex + 1) / quizData.length) * 100;
-
-        return (
-          <div className="bg-white p-6 md:p-8 rounded-2xl shadow-lg w-full animate-fade-in">
-              <div className="mb-6">
-                  <div className="flex justify-between items-center mb-2 text-sm text-slate-600">
-                      <span>Câu hỏi {currentQuestionIndex + 1} / {quizData.length}</span>
-                      <span className="font-bold text-sky-600">Điểm: {score}</span>
-                  </div>
-                  <div className="w-full bg-slate-200 rounded-full h-2.5">
-                      <div className="bg-sky-600 h-2.5 rounded-full" style={{ width: `${progressPercentage}%`, transition: 'width 0.5s ease-in-out' }}></div>
-                  </div>
-              </div>
-
-            <div className="mb-6">
-                <p className="text-lg font-semibold text-slate-500 mb-2">
-                  {currentQuestion.type === 'error-identification' ? 'Xác định lỗi sai trong câu sau:' : 'Chọn đáp án đúng nhất:'}
-                </p>
-                <p className="text-xl text-slate-800" dangerouslySetInnerHTML={{ __html: currentQuestion.question }} />
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-              {currentQuestion.options.map(option => (
-                <button
-                  key={option.id}
-                  onClick={() => handleAnswerSelect(option.id)}
-                  disabled={isAnswered}
-                  className={`p-4 border-2 rounded-lg text-left transition-all duration-300 ${getOptionClasses(option)} disabled:cursor-not-allowed flex items-center gap-3`}
-                >
-                  <span className="font-bold text-sky-700">{option.id}.</span>
-                  <span>{option.text}</span>
-                </button>
-              ))}
-            </div>
-            
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-              <button 
-                onMouseDown={handleHintShow}
-                onTouchStart={handleHintShow}
-                className="flex select-none items-center gap-2 px-4 py-2 bg-yellow-100 text-yellow-800 font-semibold rounded-lg hover:bg-yellow-200 transition-colors w-full sm:w-auto"
-              >
-                <LightbulbIcon />
-                Giữ để xem gợi ý
-              </button>
-
-              {isAnswered && (
-                <button 
-                  onClick={handleNextQuestion}
-                  className="w-full sm:w-auto px-6 py-2 bg-sky-600 text-white font-bold rounded-lg hover:bg-sky-700 transition-all transform hover:scale-105"
-                >
-                  {currentQuestionIndex === quizData.length - 1 ? 'Hoàn thành' : 'Câu tiếp theo'}
-                </button>
-              )}
-            </div>
-
-            {showHint && !isAnswered && (
-                <div className="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg text-yellow-900 animate-fade-in">
-                    <p><span className="font-bold">Gợi ý:</span> {currentQuestion.hint}</p>
-                </div>
-            )}
-            
-            {isAnswered && (
-              <div className="mt-4 p-4 bg-slate-50 border border-slate-200 rounded-lg animate-fade-in">
-                  {selectedAnswerId === currentQuestion.correctAnswerId ? (
-                      <div className="flex items-center gap-2 text-green-700">
-                          <CheckCircleIcon />
-                          <p className="font-bold text-lg">Chính xác!</p>
-                      </div>
-                  ) : (
-                      <div className="flex items-center gap-2 text-red-700">
-                          <XCircleIcon />
-                          <p className="font-bold text-lg">Không chính xác!</p>
-                      </div>
-                  )}
-                  <p className="mt-2 text-slate-700"><span className="font-semibold">Giải thích:</span> {currentQuestion.explanation}</p>
-              </div>
-            )}
-
-          </div>
-        );
-      };
-      // END: components/QuizScreen.tsx
-
-      // START: components/ResultScreen.tsx
-      const ResultScreen = ({ score, totalQuestions, playerName, onRestart }) => {
-        const totalPossibleScore = totalQuestions * 10;
-        const percentage = Math.round((score / totalPossibleScore) * 100);
-
-        const getFeedback = () => {
-          if (percentage >= 90) return "Xuất sắc! Bạn là một chuyên gia Mệnh đề Quan hệ!";
-          if (percentage >= 70) return "Rất tốt! Bạn đã nắm vững kiến thức.";
-          if (percentage >= 50) return "Khá ổn! Cần ôn luyện thêm một chút.";
-          return "Cần cố gắng hơn! Hãy thử lại để cải thiện nhé.";
-        };
-        
-        return (
-          <div className="bg-white p-8 rounded-2xl shadow-lg text-center max-w-md mx-auto animate-fade-in">
-            <h1 className="text-3xl font-bold text-slate-800 mb-2">Hoàn thành!</h1>
-            <p className="text-lg text-slate-600 mb-4">Chúc mừng, <span className="font-bold text-sky-600">{playerName}</span>!</p>
-            
-            <div className="bg-sky-50 border-2 border-sky-200 rounded-xl p-6 my-6">
-              <p className="text-slate-600 text-lg">Bạn đã đạt được</p>
-              <p className="text-5xl font-bold text-sky-600 my-2">{score} / {totalPossibleScore}</p>
-              <p className="text-slate-600 text-lg">điểm</p>
-            </div>
-            
-            <p className="text-xl font-semibold text-slate-700 mb-8">{getFeedback()}</p>
-            
-            <button
-              onClick={onRestart}
-              className="w-full px-4 py-3 bg-sky-600 text-white font-bold rounded-lg hover:bg-sky-700 transition-all transform hover:scale-105"
-            >
-              Làm lại
-            </button>
-          </div>
-        );
-      };
-      // END: components/ResultScreen.tsx
-
-      // START: App.tsx
-      const App = () => {
-        const [gameState, setGameState] = useState('welcome');
-        const [playerName, setPlayerName] = useState('');
-        const [score, setScore] = useState(0);
-
-        const startGame = useCallback((name) => {
-          setPlayerName(name);
-          setScore(0);
-          setGameState('quiz');
-        }, []);
-
-        const finishGame = useCallback((finalScore) => {
-          setScore(finalScore);
-          setGameState('results');
-        }, []);
-
-        const restartGame = useCallback(() => {
-          setPlayerName('');
-          setScore(0);
-          setGameState('welcome');
-        }, []);
-
-        const renderContent = () => {
-          switch (gameState) {
-            case 'quiz':
-              return <QuizScreen onFinish={finishGame} />;
-            case 'results':
-              return <ResultScreen score={score} totalQuestions={quizData.length} playerName={playerName} onRestart={restartGame} />;
-            case 'welcome':
-            default:
-              return <WelcomeScreen onStart={startGame} />;
-          }
-        };
-
-        return (
-          <div className="min-h-screen bg-slate-100 font-sans flex flex-col items-center justify-center p-4">
-            <div className="w-full max-w-3xl mx-auto">
-              {renderContent()}
-            </div>
-          </div>
-        );
-      };
-      // END: App.tsx
-
-      // START: index.tsx
-      const rootElement = document.getElementById('root');
-      if (!rootElement) {
-        throw new Error("Could not find root element to mount to");
-      }
-
-      const root = ReactDOM.createRoot(rootElement);
-      root.render(
-        <React.StrictMode>
-          <App />
-        </React.StrictMode>
+        </div>
       );
-      // END: index.tsx
-    </script>
-  </body>
+    }
+
+    function ResultScreen({ playerName, score, totalQuestions, onRestart }) {
+        const percentage = Math.round((score / (totalQuestions * 10)) * 100);
+        
+        let message = "";
+        if (percentage >= 80) {
+            message = "Thật ấn tượng!";
+        } else if (percentage >= 50) {
+            message = "Làm tốt lắm!";
+        } else {
+            message = "Cố gắng hơn nhé!";
+        }
+
+        return (
+            <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 p-4">
+                <div className="w-full max-w-md bg-white rounded-2xl shadow-xl p-8 text-center animate-fade-in">
+                    <h1 className="text-2xl md:text-3xl font-bold text-gray-800 mb-4">
+                        Chúc mừng, <span className="text-blue-600">{playerName}</span>!
+                    </h1>
+                    <p className="text-gray-600 mb-6 text-lg">Bạn đã hoàn thành bài tập.</p>
+                    <div className="bg-blue-50 rounded-lg p-6 mb-8">
+                         <p className="text-xl font-semibold text-gray-700">Điểm của bạn:</p>
+                        <p className="text-5xl font-bold text-blue-600 my-2">{score}</p>
+                        <p className="text-gray-500">trên tổng số {totalQuestions * 10} điểm</p>
+                    </div>
+                    <p className="text-xl font-semibold text-gray-800 mb-6">{message}</p>
+                    <button
+                        onClick={onRestart}
+                        className="w-full bg-blue-600 text-white font-bold py-3 px-6 rounded-lg shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-transform transform hover:scale-105 text-lg"
+                    >
+                        Làm lại từ đầu
+                    </button>
+                </div>
+            </div>
+        );
+    }
+    
+    function QuizScreen({ questions, onFinish }) {
+        const [currentQuestionIndex, setCurrentQuestionIndex] = React.useState(0);
+        const [score, setScore] = React.useState(0);
+        const [selectedAnswer, setSelectedAnswer] = React.useState(null);
+        const [isAnswered, setIsAnswered] = React.useState(false);
+        const [isCorrect, setIsCorrect] = React.useState(null);
+        const [showHint, setShowHint] = React.useState(false);
+
+        const currentQuestion = questions[currentQuestionIndex];
+
+        const handleAnswerSelect = (optionId) => {
+            if (isAnswered) return;
+
+            setSelectedAnswer(optionId);
+            setIsAnswered(true);
+            const correct = optionId === currentQuestion.correctAnswer;
+            setIsCorrect(correct);
+            if (correct) {
+                setScore(prevScore => prevScore + 10);
+            }
+        };
+
+        const handleNextQuestion = () => {
+            if (currentQuestionIndex < questions.length - 1) {
+                setCurrentQuestionIndex(prevIndex => prevIndex + 1);
+                setSelectedAnswer(null);
+                setIsAnswered(false);
+                setIsCorrect(null);
+                setShowHint(false);
+            } else {
+                onFinish(score);
+            }
+        };
+
+        const getButtonClass = (optionId) => {
+            if (!isAnswered) {
+              return "bg-white hover:bg-blue-50 border-gray-300";
+            }
+            if (optionId === currentQuestion.correctAnswer) {
+              return "bg-green-100 border-green-400 text-green-800";
+            }
+            if (optionId === selectedAnswer) {
+              return "bg-red-100 border-red-400 text-red-800";
+            }
+            return "bg-white border-gray-300 opacity-60";
+        };
+
+        const setupHintListeners = () => {
+            const handleMouseUp = () => {
+                setShowHint(false);
+                window.removeEventListener('mouseup', handleMouseUp);
+                window.removeEventListener('touchend', handleMouseUp);
+            };
+
+            window.addEventListener('mouseup', handleMouseUp);
+            window.addEventListener('touchend', handleMouseUp);
+        };
+        
+        const handleHintMouseDown = () => {
+            setShowHint(true);
+            setupHintListeners();
+        };
+
+        return (
+            <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 p-4">
+                <div className="w-full max-w-3xl bg-white rounded-2xl shadow-xl p-6 md:p-8 animate-fade-in">
+                    <div className="flex justify-between items-center mb-6">
+                        <p className="text-lg font-semibold text-gray-700">Câu {currentQuestionIndex + 1}/{questions.length}</p>
+                        <p className="text-lg font-bold text-blue-600">Điểm: {score}</p>
+                    </div>
+
+                    <div className="mb-6">
+                        <p className="text-xl md:text-2xl font-semibold text-gray-800 leading-relaxed">{currentQuestion.question}</p>
+                        <p className="text-md md:text-lg text-gray-500 italic mt-2">{currentQuestion.translation}</p>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                        {currentQuestion.options.map((option) => (
+                            <button
+                                key={option.id}
+                                onClick={() => handleAnswerSelect(option.id)}
+                                disabled={isAnswered}
+                                className={`w-full text-left p-4 border rounded-lg shadow-sm transition duration-300 flex items-center text-lg ${getButtonClass(option.id)} ${!isAnswered ? 'cursor-pointer' : 'cursor-default'}`}
+                            >
+                                <span className="font-bold mr-3">{option.id}.</span>
+                                <span>{option.text}</span>
+                            </button>
+                        ))}
+                    </div>
+                    
+                    <div className="relative mb-6">
+                        <button
+                            onMouseDown={handleHintMouseDown}
+                            onTouchStart={handleHintMouseDown}
+                            className="flex items-center justify-center px-4 py-2 bg-yellow-400 text-yellow-900 font-semibold rounded-lg shadow-sm hover:bg-yellow-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-400 transition"
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                            </svg>
+                            Xem gợi ý (Giữ)
+                        </button>
+                        {showHint && (
+                            <div className="absolute bottom-full mb-2 w-full max-w-md bg-gray-800 text-white text-sm rounded-lg p-3 shadow-lg animate-fade-in">
+                                {currentQuestion.hint}
+                            </div>
+                        )}
+                    </div>
+
+                    {isAnswered && (
+                        <div className="p-4 rounded-lg animate-fade-in mb-6" style={{ backgroundColor: isCorrect ? '#f0fff4' : '#fff5f5' }}>
+                            <div className="flex items-center mb-2">
+                                {isCorrect ? <CheckCircleIcon /> : <XCircleIcon />}
+                                <p className={`ml-3 text-lg font-bold ${isCorrect ? 'text-green-700' : 'text-red-700'}`}>
+                                    {isCorrect ? 'Chính xác!' : 'Sai rồi!'}
+                                </p>
+                            </div>
+                            <p className="text-gray-700">{currentQuestion.explanation}</p>
+                        </div>
+                    )}
+
+                    {isAnswered && (
+                        <button
+                            onClick={handleNextQuestion}
+                            className="w-full bg-blue-600 text-white font-bold py-3 px-6 rounded-lg shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-transform transform hover:scale-105 text-lg"
+                        >
+                            {currentQuestionIndex < questions.length - 1 ? 'Câu tiếp theo' : 'Hoàn thành'}
+                        </button>
+                    )}
+                </div>
+            </div>
+        );
+    }
+
+
+    //=========== App ==============
+    function App() {
+      const [gameState, setGameState] = React.useState({
+        screen: 'welcome', // welcome, quiz, results
+        playerName: '',
+        score: 0,
+      });
+
+      const handleStartQuiz = (name) => {
+        setGameState({
+          screen: 'quiz',
+          playerName: name,
+          score: 0,
+        });
+      };
+
+      const handleFinishQuiz = (finalScore) => {
+        setGameState(prevState => ({
+          ...prevState,
+          screen: 'results',
+          score: finalScore,
+        }));
+      };
+
+      const handleRestartQuiz = () => {
+        setGameState({
+          screen: 'welcome',
+          playerName: '',
+          score: 0,
+        });
+      };
+
+      switch (gameState.screen) {
+        case 'quiz':
+          return <QuizScreen questions={quizData} onFinish={handleFinishQuiz} />;
+        case 'results':
+          return (
+            <ResultScreen
+              playerName={gameState.playerName}
+              score={gameState.score}
+              totalQuestions={quizData.length}
+              onRestart={handleRestartQuiz}
+            />
+          );
+        case 'welcome':
+        default:
+          return <WelcomeScreen onStart={handleStartQuiz} />;
+      }
+    }
+
+    const container = document.getElementById('root');
+    const root = ReactDOM.createRoot(container);
+    root.render(<App />);
+
+  </script>
+</body>
 </html>
